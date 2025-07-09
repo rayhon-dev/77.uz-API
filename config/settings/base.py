@@ -2,6 +2,9 @@ import os
 import sys
 from datetime import timedelta
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
+
 
 from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
@@ -12,8 +15,12 @@ sys.path.append(os.path.join(BASE_DIR, "apps"))
 
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
+
+DEBUG = os.getenv("DEBUG", "False") == "True"
+
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", "IUGUIG@&(*GHBuihdb829827gvfb92)")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # Application definition
 BASE_APPS = [
@@ -37,12 +44,8 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "common",
-    "users",
-    "products",
-    "orders",
-    "cart",
-    "profiles",
-    "reviews"
+    "accounts",
+    "store"
 ]
 INSTALLED_APPS = BASE_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -77,11 +80,10 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "config.wsgi.app"
+WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
 
 DATABASES = {
     'default': {
@@ -89,11 +91,8 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
@@ -144,8 +143,7 @@ LOCALE_PATHS = [
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -153,24 +151,18 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
-AUTH_USER_MODEL = "users.User"
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-AUTHENTICATION_BACKENDS = (
-    "users.backends.PhoneBackend",
-    "django.contrib.auth.backends.ModelBackend",
-)
+AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
-
-REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
-REDIS_PORT = os.environ.get("REDIS_PORT", "6379")
-
+# Cache
+REDIS_HOST = os.environ.get("REDIS_HOST")
+REDIS_PORT = os.environ.get("REDIS_PORT")
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            # "PASSWORD": os.environ.get("REDIS_PASSWORD"),  # agar kerak bo‘lsa
+            # "PASSWORD": os.environ.get("REDIS_PASSWORD"),
         },
     }
 }
@@ -201,4 +193,3 @@ SMS_API_URL = os.environ.get("SMS_API_URL")
 SMS_LOGIN = os.environ.get("SMS_LOGIN")
 SMS_PASSWORD = os.environ.get("SMS_PASSWORD")
 SMS_SENDER_ID = os.environ.get("SMS_SENDER_ID")
-
