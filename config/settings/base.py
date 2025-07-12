@@ -16,7 +16,7 @@ sys.path.append(os.path.join(BASE_DIR, "apps"))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 
-DEBUG = os.getenv("DEBUG", "False") == "True"
+DEBUG = True
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -40,6 +40,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "drf_yasg",
     "django_cleanup.apps.CleanupSelectedConfig",
+
 ]
 
 LOCAL_APPS = [
@@ -57,9 +58,10 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "config.middlewares.AuthenticationMiddlewareJWT",
+    # "config.middlewares.AuthenticationMiddlewareJWT",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -193,3 +195,4 @@ SMS_API_URL = os.environ.get("SMS_API_URL")
 SMS_LOGIN = os.environ.get("SMS_LOGIN")
 SMS_PASSWORD = os.environ.get("SMS_PASSWORD")
 SMS_SENDER_ID = os.environ.get("SMS_SENDER_ID")
+
