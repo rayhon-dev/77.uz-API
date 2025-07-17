@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import Page
+from django.utils.translation import get_language
+
 
 class PageListSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
@@ -9,19 +11,20 @@ class PageListSerializer(serializers.ModelSerializer):
         fields = ['slug', 'title']
 
     def get_title(self, obj):
-        return f"{obj.safe_translation_getter('title', 'uz')} / {obj.safe_translation_getter('title', 'ru')}"
+        lang = get_language() or 'uz'
+        return getattr(obj, f"title_{lang}", obj.title)
 
 
 class PageDetailSerializer(serializers.ModelSerializer):
-    title = serializers.SerializerMethodField()
-    content = serializers.SerializerMethodField()
 
     class Meta:
         model = Page
         fields = ['slug', 'title', 'content', 'created_at', 'updated_at']
 
     def get_title(self, obj):
-        return f"{obj.safe_translation_getter('title', 'uz')} / {obj.safe_translation_getter('title', 'ru')}"
+        lang = get_language() or 'uz'
+        return getattr(obj, f"title_{lang}", obj.title)
 
     def get_content(self, obj):
-        return f"{obj.safe_translation_getter('content', 'uz')} {obj.safe_translation_getter('content', 'ru')}"
+        lang = get_language() or 'uz'
+        return getattr(obj, f"content_{lang}", obj.content)
