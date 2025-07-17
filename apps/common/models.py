@@ -19,13 +19,42 @@ class Page(BaseModel):
     content = models.TextField()
     slug = models.SlugField(unique=True, blank=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
     def save(self, *args, **kwargs):
-        if not self.slug and self.title:
-            self.slug = slugify(self.title_uz or self.title)
+        if not self.slug:
+            title_uz = getattr(self, 'title_uz', None)
+            if title_uz:
+                self.slug = slugify(title_uz)
+            else:
+                self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         return self.title
+
+
+class Region(BaseModel):
+    name = models.CharField(max_length=100)
+
+
+    def __str__(self):
+        return self.name
+
+
+class District(BaseModel):
+    region = models.ForeignKey(Region, related_name='districts', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class Setting(models.Model):
+    phone = models.CharField(max_length=100)
+    support_email = models.EmailField()
+    working_hours = models.CharField(max_length=100)
+    app_version = models.CharField(max_length=100)
+    maintenance_mode = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "Site Settings"
