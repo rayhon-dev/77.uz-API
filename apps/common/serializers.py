@@ -3,6 +3,7 @@ from .models import Page, District, Region, Setting
 from django.utils.translation import get_language
 
 
+
 class PageListSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
 
@@ -50,9 +51,6 @@ class RegionSerializer(serializers.ModelSerializer):
         ]
 
 
-from rest_framework import serializers
-from django.utils.translation import get_language
-from .models import Setting
 
 class SettingSerializer(serializers.ModelSerializer):
     working_hours = serializers.SerializerMethodField()
