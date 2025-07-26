@@ -1,38 +1,40 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import CustomUser, ProductCategory
-from django.utils.translation import gettext_lazy as _
-from django.contrib import admin
-from .models import CustomUser, ProductCategory
-
-
-@admin.register(ProductCategory)
-class ProductCategoryAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name']
-
-
-
-# users/admin.py
-from django.contrib import admin, messages
-from django.contrib.auth.hashers import make_password
-from .models import CustomUser
+from modeltranslation.admin import TabbedTranslationAdmin
+from .models import CustomUser, Address
 from .utils import generate_random_password
+from django.utils.translation import gettext_lazy as _
+
+
+@admin.register(Address)
+class AddressAdmin(TabbedTranslationAdmin):
+    list_display = ['id', 'name', 'lat', 'long']
+    search_fields = ['name']
 
 
 @admin.register(CustomUser)
-class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ['username', 'full_name', 'is_active', 'is_approved']
-    actions = ['approve_and_generate_password']
+class CustomUserAdmin(TabbedTranslationAdmin):
+    list_display = ('phone_number', 'full_name', 'project_name', 'status', 'is_active')
+    readonly_fields = ('phone_number', 'generated_password_display')
+    fieldsets = (
+        (_('User Info'), {
+            'fields': ('full_name', 'project_name', 'phone_number', 'category', 'address')
+        }),
+        (_('Status'), {
+            'fields': ('status', 'is_active', 'is_seller', 'generated_password_display')
+        }),
+    )
 
-    @admin.action(description="Tasdiqlash va parol yaratish")
-    def approve_and_generate_password(self, request, queryset):
-        for user in queryset:
-            if not user.is_active:
-                password = generate_random_password()
-                user.password = make_password(password)
-                user.is_active = True
-                user.is_approved = True
-                user.save()
-                messages.success(request, f"{user.username} uchun parol: {password}")
-            else:
-                messages.warning(request, f"{user.username} allaqachon aktiv.")
+    def save_model(self, request, obj, form, change):
+        old_obj = CustomUser.objects.filter(pk=obj.pk).first()
+
+        if old_obj and old_obj.status != 'approved' and obj.status == 'approved':
+            new_password = generate_random_password()
+            obj.set_password(new_password)
+            obj.is_active = True
+            obj._generated_password = new_password
+
+        super().save_model(request, obj, form, change)
+
+    def generated_password_display(self, obj):
+        return getattr(obj, '_generated_password', '----')
+    generated_password_display.short_description = _('Generated Password (show only after approval)')

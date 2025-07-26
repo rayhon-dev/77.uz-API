@@ -1,53 +1,45 @@
 from rest_framework import serializers
-from .models import CustomUser, ProductCategory
+from .models import CustomUser, Address
+from store.models import Category
 
 
-class AddressSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    lat = serializers.FloatField()
-    long = serializers.FloatField()
+class CategoryMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ['name', 'lat', 'long']
 
 
 class SellerRegistrationSerializer(serializers.ModelSerializer):
     category_id = serializers.IntegerField(write_only=True)
     address = AddressSerializer()
 
+    category = CategoryMiniSerializer(read_only=True)
+    status = serializers.CharField(read_only=True)
+
     class Meta:
         model = CustomUser
-        fields = ['id', 'full_name', 'project_name', 'category_id', 'phone_number', 'address', 'status']
+        fields = [
+            'id', 'full_name', 'project_name', 'phone_number',
+            'category_id', 'category', 'address', 'status'
+        ]
 
     def create(self, validated_data):
         address_data = validated_data.pop('address')
         category_id = validated_data.pop('category_id')
-        category = ProductCategory.objects.get(id=category_id)  # 'category_id' orqali 'ProductCategory'ni olish
+        address = Address.objects.create(**address_data)
+        category = Category.objects.get(id=category_id)
 
         user = CustomUser.objects.create(
             **validated_data,
             category=category,
+            address=address,
             is_active=False,
-            is_approved=False,
             is_seller=True
         )
-
-        # Address ma'lumotlarini foydalanuvchiga qo‘shamiz
-        user.address_name = address_data['name']
-        user.address_lat = address_data['lat']
-        user.address_long = address_data['long']
-        user.save()
-
         return user
-
-    def to_representation(self, instance):
-        return {
-            "id": instance.id,
-            "full_name": instance.full_name,
-            "project_name": instance.project_name,
-            "category_id": instance.category.id if instance.category else None,
-            "phone_number": instance.phone_number,
-            "address": {
-                "name": instance.address_name,
-                "lat": instance.address_lat,
-                "long": instance.address_long,
-            },
-            "status": "pending"  # Response'da statusni ko‘rsatamiz
-        }

@@ -1,11 +1,10 @@
 from rest_framework import generics
-from yaml import serialize
-
 from .models import Page, Region, Setting
 from .pagination import CustomPagination
 from .serializers import PageListSerializer, PageDetailSerializer, RegionSerializer, SettingSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
 
 class PageListAPIView(generics.ListAPIView):
     queryset = Page.objects.all()
