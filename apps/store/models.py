@@ -16,5 +16,6 @@ class Category(BaseModel):
         upload_to='categories/', validators=[icon_extensions], null=True, blank=True
     )
 
-    def __str__(self) :
-        return self.name
+    def __str__(self):
+        return getattr(self, 'name', 'Category')
+
