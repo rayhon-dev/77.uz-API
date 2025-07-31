@@ -1,6 +1,15 @@
 from rest_framework import serializers
 from .models import CustomUser, Address
 from store.models import Category
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.serializers import TokenVerifySerializer
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import UntypedToken
+
+User = get_user_model()
+
 
 
 class CategoryMiniSerializer(serializers.ModelSerializer):
@@ -43,3 +52,32 @@ class SellerRegistrationSerializer(serializers.ModelSerializer):
             is_seller=True
         )
         return user
+
+
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    phone_number = serializers.CharField()
+
+    def validate(self, attrs):
+        phone_number = attrs.get("phone_number")
+        password = attrs.get("password")
+
+        user = authenticate(phone_number=phone_number, password=password)
+
+        if not user or not user.is_active:
+            raise AuthenticationFailed('No active account found with the given credentials', code='authorization')
+
+        data = super().validate(attrs)
+        return data
+
+
+
+class CustomTokenVerifySerializer(TokenVerifySerializer):
+    token_class = UntypedToken
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+        validated_data["valid"] = True
+        validated_data["user_id"] = self.user.id if hasattr(self, "user") else None
+        return validated_data

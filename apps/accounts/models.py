@@ -19,7 +19,7 @@ class CustomUser(AbstractBaseUser):
     full_name = models.CharField(max_length=255)
     project_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20, unique=True)
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     address = models.OneToOneField(Address, on_delete=models.SET_NULL, null=True, blank=True)
 
@@ -29,6 +29,8 @@ class CustomUser(AbstractBaseUser):
         ('rejected', 'Rejected'),
     ]
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    manual_password = models.CharField(max_length=128, blank=True, null=True)
+
 
     is_active = models.BooleanField(default=False)
     is_seller = models.BooleanField(default=True)

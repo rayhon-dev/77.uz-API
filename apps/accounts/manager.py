@@ -22,3 +22,6 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
 
         return self.create_user(phone_number, password, **extra_fields)
+
+    def get_by_natural_key(self, phone_number):
+        return self.get(phone_number=phone_number)

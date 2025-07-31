@@ -2,6 +2,10 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from .serializers import SellerRegistrationSerializer
 from .models import CustomUser
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import CustomTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenVerifyView
+from .serializers import CustomTokenVerifySerializer
 
 
 class SellerRegistrationView(generics.CreateAPIView):
@@ -20,3 +24,17 @@ class SellerRegistrationView(generics.CreateAPIView):
         return Response({
             "message": "Arizangiz qabul qilindi. Admin siz bilan tez orada bog‘lanadi."
         }, status=status.HTTP_201_CREATED)
+
+
+
+
+
+
+class CustomLoginView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+
+
+class CustomTokenVerifyView(TokenVerifyView):
+    serializer_class = CustomTokenVerifySerializer
+

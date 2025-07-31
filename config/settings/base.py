@@ -185,8 +185,9 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": False,
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
-    "USER_ID_FIELD": "guid",
-    "USER_ID_CLAIM": "user_guid",
+    "USER_ID_FIELD": "id",
 }
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+
