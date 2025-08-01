@@ -6,6 +6,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenVerifyView
 from .serializers import CustomTokenVerifySerializer
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from .serializers import UserMeSerializer
+
 
 
 class SellerRegistrationView(generics.CreateAPIView):
@@ -27,9 +31,6 @@ class SellerRegistrationView(generics.CreateAPIView):
 
 
 
-
-
-
 class CustomLoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
@@ -38,3 +39,12 @@ class CustomLoginView(TokenObtainPairView):
 class CustomTokenVerifyView(TokenVerifyView):
     serializer_class = CustomTokenVerifySerializer
 
+
+
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserMeSerializer(request.user)
+        return Response(serializer.data)

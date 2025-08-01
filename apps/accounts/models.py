@@ -22,6 +22,7 @@ class CustomUser(AbstractBaseUser):
     email = models.EmailField()
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     address = models.OneToOneField(Address, on_delete=models.SET_NULL, null=True, blank=True)
+    profile_photo = models.ImageField(upload_to='profiles/', null=True, blank=True)
 
     STATUS_CHOICES = [
         ('pending', 'Pending'),

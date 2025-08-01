@@ -81,3 +81,17 @@ class CustomTokenVerifySerializer(TokenVerifySerializer):
         validated_data["valid"] = True
         validated_data["user_id"] = self.user.id if hasattr(self, "user") else None
         return validated_data
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+    address = AddressSerializer()
+    profile_photo = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'full_name', 'phone_number', 'profile_photo', 'address']
+
+    def get_profile_photo(self, obj):
+        if obj.profile_photo and hasattr(obj.profile_photo, 'url'):
+            return obj.profile_photo.url
+        return None
