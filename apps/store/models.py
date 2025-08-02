@@ -19,3 +19,7 @@ class Category(BaseModel):
     def __str__(self):
         return getattr(self, 'name', 'Category')
 
+    class Meta:
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
+

@@ -14,7 +14,6 @@ class Address(models.Model):
 
 
 
-
 class CustomUser(AbstractBaseUser):
     full_name = models.CharField(max_length=255)
     project_name = models.CharField(max_length=255)
