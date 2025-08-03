@@ -11,5 +11,5 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', views.CustomTokenVerifyView.as_view(), name='token_verify'),
     path('me/', views.MeView.as_view(), name='account-me'),
-
+    path('edit/', views.UserEditView.as_view(), name='account-edit'),
 ]

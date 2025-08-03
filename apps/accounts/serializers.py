@@ -1,21 +1,10 @@
-from rest_framework import serializers
-from .models import CustomUser, Address
-from store.models import Category
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenVerifySerializer
-from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import UntypedToken
-
-User = get_user_model()
-
-
-
-class CategoryMiniSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name']
+from rest_framework import serializers
+from .models import CustomUser, Address, Category
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -25,35 +14,44 @@ class AddressSerializer(serializers.ModelSerializer):
 
 
 class SellerRegistrationSerializer(serializers.ModelSerializer):
-    category_id = serializers.IntegerField(write_only=True)
     address = AddressSerializer()
-
-    category = CategoryMiniSerializer(read_only=True)
+    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), write_only=True)
+    category_id = serializers.IntegerField(source='category.id', read_only=True)
     status = serializers.CharField(read_only=True)
 
     class Meta:
         model = CustomUser
         fields = [
-            'id', 'full_name', 'project_name', 'phone_number',
-            'category_id', 'category', 'address', 'status'
+            'id',
+            'full_name',
+            'project_name',
+            'phone_number',
+            'category',
+            'category_id',
+            'address',
+            'status',
         ]
 
     def create(self, validated_data):
         address_data = validated_data.pop('address')
-        category_id = validated_data.pop('category_id')
+        category = validated_data.pop('category')
+
         address = Address.objects.create(**address_data)
-        category = Category.objects.get(id=category_id)
 
         user = CustomUser.objects.create(
             **validated_data,
             category=category,
             address=address,
             is_active=False,
-            is_seller=True
+            role=CustomUser.Role.SELLER,
+            status='pending'
         )
         return user
 
-
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['address'] = instance.address.name if instance.address else None
+        return data
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -95,3 +93,24 @@ class UserMeSerializer(serializers.ModelSerializer):
         if obj.profile_photo and hasattr(obj.profile_photo, 'url'):
             return obj.profile_photo.url
         return None
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    address = serializers.PrimaryKeyRelatedField(queryset=Address.objects.all(), required=False)
+    profile_photo = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ['full_name', 'phone_number', 'profile_photo', 'address']
+        read_only_fields = ['profile_photo']
+
+    def get_profile_photo(self, obj):
+        if obj.profile_photo and hasattr(obj.profile_photo, 'url'):
+            return obj.profile_photo.url
+        return None
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
