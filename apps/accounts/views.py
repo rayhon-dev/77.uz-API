@@ -1,4 +1,4 @@
-from rest_framework import generics, status
+from rest_framework import status
 from rest_framework.response import Response
 from .serializers import SellerRegistrationSerializer
 from .models import CustomUser
@@ -8,7 +8,6 @@ from .serializers import (
     CustomTokenVerifySerializer,
     UserMeSerializer
 )
-from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from common.utils.custom_response_decorator import custom_response
 from rest_framework import generics, permissions
@@ -41,13 +40,12 @@ class CustomTokenVerifyView(TokenVerifyView):
 
 
 @custom_response
-class MeView(APIView):
+class MeView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = UserMeSerializer
 
-    def get(self, request):
-        serializer = UserMeSerializer(request.user)
-        return Response(serializer.data)
-
+    def get_object(self):
+        return self.request.user
 
 
 @custom_response
