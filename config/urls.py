@@ -1,3 +1,5 @@
+import os
+
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
@@ -5,19 +7,19 @@ from drf_yasg import openapi
 from drf_yasg.generators import OpenAPISchemaGenerator
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from config.settings import base as settings
-import os
 
+from config.settings import base as settings
 
 
 class BothHttpAndHttpsSchemaGenerator(OpenAPISchemaGenerator):
     def get_schema(self, request=None, public=False):
         schema = super().get_schema(request, public)
         schema.schemes = (
-            ["http"] if os.environ.get("DJANGO_SETTINGS_MODULE") == "config.settings.development" else ["https"]
+            ["http"]
+            if os.environ.get("DJANGO_SETTINGS_MODULE") == "config.settings.development"
+            else ["https"]
         )
         return schema
-
 
 
 schema_view = get_schema_view(
@@ -48,12 +50,8 @@ if os.environ.get("DJANGO_SETTINGS_MODULE") == "config.settings.development":
     urlpatterns += [
         path("__debug__/", include("debug_toolbar.urls")),
     ]
-    urlpatterns += static(
-        settings.STATIC_URL, document_root=settings.STATIC_ROOT
-    )
-    urlpatterns += static(
-        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
-    )
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += [
         path(
             "swagger/",

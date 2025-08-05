@@ -1,12 +1,11 @@
 import uuid
-from django.utils.text import slugify
+
 from django.db import models
+from django.utils.text import slugify
 
 
 class BaseModel(models.Model):
-    guid = models.UUIDField(
-        unique=True, default=uuid.uuid4, editable=False, db_index=True
-    )
+    guid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -21,13 +20,12 @@ class Page(BaseModel):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            title_uz = getattr(self, 'title_uz', None)
+            title_uz = getattr(self, "title_uz", None)
             if title_uz:
                 self.slug = slugify(title_uz)
             else:
                 self.slug = slugify(self.title)
         super().save(*args, **kwargs)
-
 
     def __str__(self):
         return self.title
@@ -36,13 +34,12 @@ class Page(BaseModel):
 class Region(BaseModel):
     name = models.CharField(max_length=100)
 
-
     def __str__(self):
         return self.name
 
 
 class District(BaseModel):
-    region = models.ForeignKey(Region, related_name='districts', on_delete=models.CASCADE)
+    region = models.ForeignKey(Region, related_name="districts", on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
 
     def __str__(self):

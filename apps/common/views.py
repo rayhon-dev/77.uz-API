@@ -1,7 +1,13 @@
 from rest_framework import generics
+
 from .models import Page, Region, Setting
 from .pagination import CustomPagination
-from .serializers import PageListSerializer, PageDetailSerializer, RegionSerializer, SettingSerializer
+from .serializers import (
+    PageDetailSerializer,
+    PageListSerializer,
+    RegionSerializer,
+    SettingSerializer,
+)
 from .utils.custom_response_decorator import custom_response
 
 
@@ -16,12 +22,12 @@ class PageListAPIView(generics.ListAPIView):
 class PageDetailAPIView(generics.RetrieveAPIView):
     queryset = Page.objects.all()
     serializer_class = PageDetailSerializer
-    lookup_field = 'slug'
+    lookup_field = "slug"
 
 
 @custom_response
 class RegionWithDistrictsView(generics.ListAPIView):
-    queryset = Region.objects.prefetch_related('districts').all()
+    queryset = Region.objects.prefetch_related("districts").all()
     serializer_class = RegionSerializer
 
 

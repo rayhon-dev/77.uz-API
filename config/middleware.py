@@ -1,7 +1,13 @@
 # common/middleware/language_middleware.py
+
+import json
+import logging
+
+from django.conf import settings
 from django.utils import translation
 from django.utils.deprecation import MiddlewareMixin
-from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 class APILanguageMiddleware(MiddlewareMixin):
@@ -11,25 +17,24 @@ class APILanguageMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
         # 1. Accept-Language header'dan tilni olish
-        language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        language = request.META.get("HTTP_ACCEPT_LANGUAGE")
 
         # 2. Query parameter'dan tilni olish (?lang=uz)
         if not language:
-            language = request.GET.get('lang')
+            language = request.GET.get("lang")
 
         # 3. POST data'dan tilni olish
-        if not language and request.method == 'POST':
-            language = request.POST.get('lang')
+        if not language and request.method == "POST":
+            language = request.POST.get("lang")
 
         # 4. JSON body'dan tilni olish (agar content-type application/json bo'lsa)
-        if not language and request.content_type == 'application/json':
-            try:
-                import json
-                if hasattr(request, 'body'):
-                    data = json.loads(request.body.decode('utf-8'))
-                    language = data.get('lang')
-            except:
-                pass
+        if not language and request.content_type == "application/json":
+            if hasattr(request, "body"):
+                try:
+                    data = json.loads(request.body.decode("utf-8"))
+                    language = data.get("lang")
+                except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                    logger.warning(f"JSON parse error in language middleware: {e}")
 
         # 5. Default tilni qo'llash
         if not language:
@@ -46,6 +51,6 @@ class APILanguageMiddleware(MiddlewareMixin):
 
     def process_response(self, request, response):
         # Response'ga til headerini qo'shish
-        if hasattr(request, 'LANGUAGE_CODE'):
-            response['Content-Language'] = request.LANGUAGE_CODE
+        if hasattr(request, "LANGUAGE_CODE"):
+            response["Content-Language"] = request.LANGUAGE_CODE
         return response

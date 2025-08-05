@@ -2,7 +2,9 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+
 from dotenv import load_dotenv
+
 
 def main():
     """Run administrative tasks."""
@@ -10,7 +12,9 @@ def main():
     load_dotenv()
 
     # Agar .env faylda DJANGO_SETTINGS_MODULE berilgan bo‘lsa, undan foydalanamiz
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", os.getenv("DJANGO_SETTINGS_MODULE", "config.settings.development"))
+    os.environ.setdefault(
+        "DJANGO_SETTINGS_MODULE", os.getenv("DJANGO_SETTINGS_MODULE", "config.settings.development")
+    )
 
     try:
         from django.core.management import execute_from_command_line
@@ -24,5 +28,5 @@ def main():
     execute_from_command_line(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

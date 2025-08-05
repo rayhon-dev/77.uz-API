@@ -2,14 +2,11 @@ import os
 import sys
 from datetime import timedelta
 from pathlib import Path
-from dotenv import load_dotenv
-load_dotenv()
-
 
 from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Load environment variables before anything else
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.append(os.path.join(BASE_DIR, "apps"))
 
@@ -40,14 +37,9 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "drf_yasg",
     "django_cleanup.apps.CleanupSelectedConfig",
-
 ]
 
-LOCAL_APPS = [
-    "common",
-    "accounts",
-    "store"
-]
+LOCAL_APPS = ["common", "accounts", "store"]
 INSTALLED_APPS = BASE_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
@@ -61,7 +53,6 @@ MIDDLEWARE = [
     "config.middleware.APILanguageMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -88,13 +79,13 @@ WSGI_APPLICATION = "config.wsgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT", "5432"),
     }
 }
 
@@ -131,7 +122,6 @@ USE_TZ = True
 LANGUAGES = (
     ("uz", _("Uzbek")),
     ("ru", _("Russian")),
-
 )
 
 MODELTRANSLATION_DEFAULT_LANGUAGE = "uz"
@@ -151,14 +141,13 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 
 AUTHENTICATION_BACKENDS = [
-    'accounts.backends.PhoneNumberBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    "accounts.backends.PhoneNumberBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 # Cache
@@ -195,10 +184,4 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "id",
 }
 
-AUTH_USER_MODEL = 'accounts.CustomUser'
-
-
-
-
-
-
+AUTH_USER_MODEL = "accounts.CustomUser"

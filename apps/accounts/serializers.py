@@ -1,40 +1,40 @@
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.serializers import TokenVerifySerializer
-from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework import serializers
-from .models import CustomUser, Address, Category
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenVerifySerializer
+from rest_framework_simplejwt.tokens import UntypedToken
+
+from .models import Address, Category, CustomUser
 
 
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = ['name', 'lat', 'long']
+        fields = ["name", "lat", "long"]
 
 
 class SellerRegistrationSerializer(serializers.ModelSerializer):
     address = AddressSerializer()
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), write_only=True)
-    category_id = serializers.IntegerField(source='category.id', read_only=True)
+    category_id = serializers.IntegerField(source="category.id", read_only=True)
     status = serializers.CharField(read_only=True)
 
     class Meta:
         model = CustomUser
         fields = [
-            'id',
-            'full_name',
-            'project_name',
-            'phone_number',
-            'category',
-            'category_id',
-            'address',
-            'status',
+            "id",
+            "full_name",
+            "project_name",
+            "phone_number",
+            "category",
+            "category_id",
+            "address",
+            "status",
         ]
 
     def create(self, validated_data):
-        address_data = validated_data.pop('address')
-        category = validated_data.pop('category')
+        address_data = validated_data.pop("address")
+        category = validated_data.pop("category")
 
         address = Address.objects.create(**address_data)
 
@@ -44,13 +44,13 @@ class SellerRegistrationSerializer(serializers.ModelSerializer):
             address=address,
             is_active=False,
             role=CustomUser.Role.SELLER,
-            status='pending'
+            status="pending",
         )
         return user
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['address'] = instance.address.name if instance.address else None
+        data["address"] = instance.address.name if instance.address else None
         return data
 
 
@@ -64,11 +64,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         user = authenticate(phone_number=phone_number, password=password)
 
         if not user or not user.is_active:
-            raise AuthenticationFailed('No active account found with the given credentials', code='authorization')
+            raise AuthenticationFailed(
+                "No active account found with the given credentials", code="authorization"
+            )
 
         data = super().validate(attrs)
         return data
-
 
 
 class CustomTokenVerifySerializer(TokenVerifySerializer):
@@ -87,10 +88,10 @@ class UserMeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'full_name', 'phone_number', 'profile_photo', 'address']
+        fields = ["id", "full_name", "phone_number", "profile_photo", "address"]
 
     def get_profile_photo(self, obj):
-        if obj.profile_photo and hasattr(obj.profile_photo, 'url'):
+        if obj.profile_photo and hasattr(obj.profile_photo, "url"):
             return obj.profile_photo.url
         return None
 
@@ -101,11 +102,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['full_name', 'phone_number', 'profile_photo', 'address']
-        read_only_fields = ['profile_photo']
+        fields = ["full_name", "phone_number", "profile_photo", "address"]
+        read_only_fields = ["profile_photo"]
 
     def get_profile_photo(self, obj):
-        if obj.profile_photo and hasattr(obj.profile_photo, 'url'):
+        if obj.profile_photo and hasattr(obj.profile_photo, "url"):
             return obj.profile_photo.url
         return None
 

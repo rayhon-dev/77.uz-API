@@ -1,38 +1,26 @@
-from rest_framework import serializers
-from .models import Ad, AdPhoto
-from store.models import Category
 from accounts.models import CustomUser
+from rest_framework import serializers
+from store.models import Category
+
+from .models import Ad, AdPhoto
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = [
-            'id',
-            'name',
-            'icon',
-            'parent'
-        ]
+        fields = ["id", "name", "icon", "parent"]
 
 
 class CategoryShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = [
-            'id',
-            'name'
-        ]
+        fields = ["id", "name"]
 
 
 class SellerShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = [
-            'id',
-            'full_name',
-            'phone_number',
-            'profile_photo'
-        ]
+        fields = ["id", "full_name", "phone_number", "profile_photo"]
 
 
 class AdCreateSerializer(serializers.ModelSerializer):
@@ -60,7 +48,7 @@ class AdCreateSerializer(serializers.ModelSerializer):
             "address",
             "seller",
             "is_liked",
-            "updated_time"
+            "updated_time",
         ]
         extra_kwargs = {
             "name_uz": {"write_only": True},
@@ -71,13 +59,15 @@ class AdCreateSerializer(serializers.ModelSerializer):
             "photos": {"write_only": True},
         }
         read_only_fields = [
-            "id", "name",
-            "slug", "photo",
+            "id",
+            "name",
+            "slug",
+            "photo",
             "published_at",
             "address",
             "seller",
             "is_liked",
-            "updated_time"
+            "updated_time",
         ]
 
     def create(self, validated_data):
@@ -104,19 +94,14 @@ class AdCreateSerializer(serializers.ModelSerializer):
         return False
 
     def get_name(self, obj):
-        lang = self.context['request'].LANGUAGE_CODE
-        return getattr(obj, f'name_{lang}', obj.name_uz)
-
-
+        lang = self.context["request"].LANGUAGE_CODE
+        return getattr(obj, f"name_{lang}", obj.name_uz)
 
 
 class AdPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdPhoto
-        fields = [
-            'id',
-            'image'
-        ]
+        fields = ["id", "image"]
 
 
 class AdDetailSerializer(serializers.ModelSerializer):
@@ -129,34 +114,33 @@ class AdDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ad
         fields = [
-            'id',
-            'name',
-            'slug',
-            'description',
-            'price',
-            'photos',
-            'published_at',
-            'address',
-            'seller',
-            'category',
-            'is_liked',
-            'view_count',
-            'updated_time',
-
+            "id",
+            "name",
+            "slug",
+            "description",
+            "price",
+            "photos",
+            "published_at",
+            "address",
+            "seller",
+            "category",
+            "is_liked",
+            "view_count",
+            "updated_time",
         ]
 
     def get_address(self, obj):
         return obj.seller.address.name if obj.seller.address else None
 
     def get_is_liked(self, obj):
-        user = self.context['request'].user
+        user = self.context["request"].user
         if user.is_authenticated:
             return obj.likes.filter(id=user.id).exists()
         return False
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        lang = self.context['request'].LANGUAGE_CODE
-        data['name'] = getattr(instance, f'name_{lang}', instance.name_uz)
-        data['description'] = getattr(instance, f'description_{lang}', instance.description_uz)
+        lang = self.context["request"].LANGUAGE_CODE
+        data["name"] = getattr(instance, f"name_{lang}", instance.name_uz)
+        data["description"] = getattr(instance, f"description_{lang}", instance.description_uz)
         return data

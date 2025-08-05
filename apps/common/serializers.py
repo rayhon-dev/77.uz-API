@@ -31,4 +31,3 @@ class SettingSerializer(serializers.Serializer):
     app_version = serializers.CharField()
     maintenance_mode = serializers.BooleanField()
     working_hours = serializers.CharField()
-

@@ -1,7 +1,8 @@
 from .base import *  # noqa
 
 ALLOWED_HOSTS = [
-    "admin.example.com", "localhost",
+    "admin.example.com",
+    "localhost",
     "127.0.0.1",
     "45.92.173.57",
 ]

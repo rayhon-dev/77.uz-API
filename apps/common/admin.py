@@ -1,24 +1,25 @@
 from django.contrib import admin
 from modeltranslation.admin import TabbedTranslationAdmin
-from .models import Page, Region, District, Setting
+
+from .models import District, Page, Region, Setting
 
 
 @admin.register(Page)
 class PageAdmin(TabbedTranslationAdmin):
-    list_display = ('slug', 'title')
+    list_display = ("slug", "title")
 
 
 @admin.register(Region)
 class RegionAdmin(TabbedTranslationAdmin):
-    list_display = ('id', 'name')
+    list_display = ("id", "name")
 
 
 @admin.register(District)
 class DistrictAdmin(TabbedTranslationAdmin):
-    list_display = ('id', 'name', 'region')
-    list_filter = ('region',)
+    list_display = ("id", "name", "region")
+    list_filter = ("region",)
 
 
 @admin.register(Setting)
 class SettingAdmin(TabbedTranslationAdmin):
-    list_display = ('phone', 'support_email', 'app_version', 'maintenance_mode')
+    list_display = ("phone", "support_email", "app_version", "maintenance_mode")

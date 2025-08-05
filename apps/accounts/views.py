@@ -1,17 +1,17 @@
-from rest_framework import status
+from common.utils.custom_response_decorator import custom_response
+from rest_framework import generics, permissions, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import SellerRegistrationSerializer
-from .models import CustomUser
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
+
+from .models import CustomUser
 from .serializers import (
     CustomTokenObtainPairSerializer,
     CustomTokenVerifySerializer,
-    UserMeSerializer
+    SellerRegistrationSerializer,
+    UserMeSerializer,
+    UserUpdateSerializer,
 )
-from rest_framework.permissions import IsAuthenticated
-from common.utils.custom_response_decorator import custom_response
-from rest_framework import generics, permissions
-from .serializers import UserUpdateSerializer
 
 
 @custom_response
@@ -25,7 +25,7 @@ class SellerRegistrationView(generics.CreateAPIView):
         serializer.save()  # 'status', 'role', va 'is_active' create() ichida belgilangan
         return Response(
             {"message": "Arizangiz qabul qilindi. Admin siz bilan tez orada bog‘lanadi."},
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
 
 
