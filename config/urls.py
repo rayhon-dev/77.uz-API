@@ -41,6 +41,7 @@ urlpatterns = [
 urlpatterns += [
     path("api/v1/common/", include(("common.urls", "common"), "common")),
     path("api/v1/accounts/", include(("accounts.urls", "accounts"), "accounts")),
+    path("api/v1/store/", include(("store.urls", "store"), "store")),
 ]
 
 if os.environ.get("DJANGO_SETTINGS_MODULE") == "config.settings.development":

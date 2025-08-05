@@ -7,54 +7,85 @@ from accounts.models import CustomUser
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name', 'icon', 'parent']
+        fields = [
+            'id',
+            'name',
+            'icon',
+            'parent'
+        ]
 
 
 class CategoryShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name']
+        fields = [
+            'id',
+            'name'
+        ]
 
 
 class SellerShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'full_name', 'phone_number', 'profile_photo']
+        fields = [
+            'id',
+            'full_name',
+            'phone_number',
+            'profile_photo'
+        ]
 
 
 class AdCreateSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
     photos = serializers.ListField(child=serializers.ImageField(), write_only=True)
     photo = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
     seller = SellerShortSerializer(read_only=True)
+    is_liked = serializers.SerializerMethodField()
 
     class Meta:
         model = Ad
         fields = [
-            'id', 'name_uz', 'name_ru', 'slug',
-            'category', 'description_uz', 'description_ru',
-            'price', 'photos', 'photo', 'published_at',
-            'address', 'seller', 'is_liked', 'updated_time'
+            "id",
+            "name",
+            "name_uz",
+            "name_ru",
+            "slug",
+            "category",
+            "price",
+            "photos",
+            "photo",
+            "published_at",
+            "address",
+            "seller",
+            "is_liked",
+            "updated_time"
         ]
         extra_kwargs = {
-            'name_uz': {'write_only': True},
-            'name_ru': {'write_only': True},
-            'description_uz': {'write_only': True},
-            'description_ru': {'write_only': True},
-            'category': {'write_only': True},
-            'photos': {'write_only': True},
+            "name_uz": {"write_only": True},
+            "name_ru": {"write_only": True},
+            "description_uz": {"write_only": True},
+            "description_ru": {"write_only": True},
+            "category": {"write_only": True},
+            "photos": {"write_only": True},
         }
         read_only_fields = [
-            'id', 'slug', 'photo', 'published_at',
-            'address', 'seller', 'is_liked', 'updated_time'
+            "id", "name",
+            "slug", "photo",
+            "published_at",
+            "address",
+            "seller",
+            "is_liked",
+            "updated_time"
         ]
 
     def create(self, validated_data):
-        request = self.context['request']
+        request = self.context["request"]
         user = request.user
-
-        photos_data = validated_data.pop('photos')
-        ad = Ad.objects.create(seller=user, **validated_data)
+        photos_data = validated_data.pop("photos")
+        address = user.address
+        ad = Ad.objects.create(seller=user, address=address, **validated_data)
         AdPhoto.objects.bulk_create([AdPhoto(ad=ad, image=img) for img in photos_data])
         return ad
 
@@ -65,11 +96,27 @@ class AdCreateSerializer(serializers.ModelSerializer):
     def get_address(self, obj):
         return obj.seller.address.name if obj.seller.address else None
 
+    def get_is_liked(self, obj):
+        request = self.context.get("request")
+        user = request.user if request else None
+        if user and user.is_authenticated:
+            return obj.likes.filter(id=user.id).exists()
+        return False
+
+    def get_name(self, obj):
+        lang = self.context['request'].LANGUAGE_CODE
+        return getattr(obj, f'name_{lang}', obj.name_uz)
+
+
+
 
 class AdPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdPhoto
-        fields = ['id', 'image']
+        fields = [
+            'id',
+            'image'
+        ]
 
 
 class AdDetailSerializer(serializers.ModelSerializer):
@@ -77,15 +124,39 @@ class AdDetailSerializer(serializers.ModelSerializer):
     address = serializers.SerializerMethodField()
     seller = SellerShortSerializer(read_only=True)
     category = CategoryShortSerializer(read_only=True)
+    is_liked = serializers.SerializerMethodField()
 
     class Meta:
         model = Ad
         fields = [
-            'id', 'name', 'slug', 'description',
-            'price', 'photos', 'published_at', 'address',
-            'seller', 'category', 'is_liked', 'view_count',
-            'updated_time'
+            'id',
+            'name',
+            'slug',
+            'description',
+            'price',
+            'photos',
+            'published_at',
+            'address',
+            'seller',
+            'category',
+            'is_liked',
+            'view_count',
+            'updated_time',
+
         ]
 
     def get_address(self, obj):
         return obj.seller.address.name if obj.seller.address else None
+
+    def get_is_liked(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return obj.likes.filter(id=user.id).exists()
+        return False
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        lang = self.context['request'].LANGUAGE_CODE
+        data['name'] = getattr(instance, f'name_{lang}', instance.name_uz)
+        data['description'] = getattr(instance, f'description_{lang}', instance.description_uz)
+        return data
