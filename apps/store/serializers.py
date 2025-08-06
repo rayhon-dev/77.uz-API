@@ -5,10 +5,29 @@ from store.models import Category
 from .models import Ad, AdPhoto
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class ChildCategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    icon = serializers.ImageField()
+
+
+class CategoryWithChildrenSerializer(serializers.ModelSerializer):
+    children = ChildCategorySerializer(source="child", many=True)
+
     class Meta:
         model = Category
-        fields = ["id", "name", "icon", "parent"]
+        fields = ["id", "name", "icon", "children"]
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    product_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Category
+        fields = ["id", "name", "icon", "product_count"]
+
+    def get_product_count(self, obj):
+        return "{:,}".format(obj.product_count) if hasattr(obj, "product_count") else "0"
 
 
 class CategoryShortSerializer(serializers.ModelSerializer):
