@@ -58,6 +58,7 @@ class AdCreateSerializer(serializers.ModelSerializer):
             "name",
             "name_uz",
             "name_ru",
+            "description",
             "slug",
             "category",
             "price",
