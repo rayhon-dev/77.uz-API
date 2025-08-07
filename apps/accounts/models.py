@@ -21,6 +21,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         ADMIN = "admin", "Admin"
         SELLER = "seller", "Sotuvchi"
 
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
     full_name = models.CharField(max_length=255)
     project_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20, unique=True)
@@ -28,18 +33,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         upload_to="profiles/", null=True, blank=True, validators=[icon_extensions]
     )
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.SELLER)
-
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
-
     address = models.OneToOneField(Address, on_delete=models.SET_NULL, null=True, blank=True)
-
-    STATUS_CHOICES = [
-        ("pending", "Pending"),
-        ("approved", "Approved"),
-        ("rejected", "Rejected"),
-    ]
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
-    manual_password = models.CharField(max_length=128, blank=True, null=True)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
 
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)

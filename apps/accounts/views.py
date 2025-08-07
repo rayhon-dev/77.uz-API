@@ -22,7 +22,7 @@ class SellerRegistrationView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()  # 'status', 'role', va 'is_active' create() ichida belgilangan
+        serializer.save()
         return Response(
             {"message": "Arizangiz qabul qilindi. Admin siz bilan tez orada bog‘lanadi."},
             status=status.HTTP_201_CREATED,
