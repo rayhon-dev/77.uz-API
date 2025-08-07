@@ -20,11 +20,7 @@ class Page(BaseModel):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            title_uz = getattr(self, "title_uz", None)
-            if title_uz:
-                self.slug = slugify(title_uz)
-            else:
-                self.slug = slugify(self.title)
+            self.slug = slugify(self.title)
         super().save(*args, **kwargs)
 
     def __str__(self):

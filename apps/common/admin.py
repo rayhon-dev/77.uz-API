@@ -6,7 +6,7 @@ from .models import District, Page, Region, Setting
 
 @admin.register(Page)
 class PageAdmin(TabbedTranslationAdmin):
-    list_display = ("slug", "title")
+    list_display = ("id", "slug", "title")
 
 
 @admin.register(Region)
@@ -22,4 +22,7 @@ class DistrictAdmin(TabbedTranslationAdmin):
 
 @admin.register(Setting)
 class SettingAdmin(TabbedTranslationAdmin):
-    list_display = ("phone", "support_email", "app_version", "maintenance_mode")
+    list_display = ("id", "phone", "support_email", "app_version", "maintenance_mode")
+
+    def has_add_permission(self, request):
+        return not Setting.objects.exists()

@@ -11,5 +11,5 @@ class PageListPagination(CustomPagination):
     page_size = 10
 
 
-class ProductListPagination(CustomPagination):
+class AdListPagination(CustomPagination):
     pass

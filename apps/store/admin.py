@@ -6,5 +6,5 @@ from .models import Category
 
 @admin.register(Category)
 class CategoryAdmin(TabbedTranslationAdmin):
-    list_display = ["name", "parent"]
+    list_display = ["id", "name", "parent"]
     list_filter = ["parent"]

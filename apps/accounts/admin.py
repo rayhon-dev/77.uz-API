@@ -1,12 +1,19 @@
 from django.contrib import admin
 from modeltranslation.admin import TabbedTranslationAdmin
 
-from .models import CustomUser
+from .models import Address, CustomUser
+
+
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "lat", "long")
+    search_fields = ("name",)
+    list_filter = ("lat", "long")
 
 
 @admin.register(CustomUser)
 class SellerUserAdmin(TabbedTranslationAdmin):
-    list_display = ("full_name", "phone_number", "status", "is_active", "role")
+    list_display = ("id", "full_name", "phone_number", "status", "is_active", "role")
     list_filter = ("status", "is_active", "role")
     search_fields = ("full_name", "phone_number")
     readonly_fields = ("last_login",)
