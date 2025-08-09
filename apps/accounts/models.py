@@ -1,4 +1,3 @@
-from common.validators import icon_extensions
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from store.models import Category
@@ -29,9 +28,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     full_name = models.CharField(max_length=255)
     project_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20, unique=True)
-    profile_photo = models.ImageField(
-        upload_to="profiles/", null=True, blank=True, validators=[icon_extensions]
-    )
+    profile_photo = models.ImageField(upload_to="profiles/", null=True, blank=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.SELLER)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     address = models.OneToOneField(Address, on_delete=models.SET_NULL, null=True, blank=True)
