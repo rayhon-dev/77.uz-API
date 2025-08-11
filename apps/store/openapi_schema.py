@@ -16,19 +16,27 @@ ad_create_schema = openapi.Schema(
         "photos",
     ],
     properties={
-        "name_uz": openapi.Schema(type=openapi.TYPE_STRING, description="Title of the ad in Uzbek"),
+        "name_uz": openapi.Schema(
+            type=openapi.TYPE_STRING, description="Title of the ad in Uzbek", example="Telefon"
+        ),
         "name_ru": openapi.Schema(
-            type=openapi.TYPE_STRING, description="Title of the ad in Russian"
+            type=openapi.TYPE_STRING, description="Title of the ad in Russian", example="Телефон"
         ),
         "description_uz": openapi.Schema(
-            type=openapi.TYPE_STRING, description="Description in Uzbek"
+            type=openapi.TYPE_STRING,
+            description="Description in Uzbek",
+            example="Yangi telefon, kafolat bilan",
         ),
         "description_ru": openapi.Schema(
-            type=openapi.TYPE_STRING, description="Description in Russian"
+            type=openapi.TYPE_STRING,
+            description="Description in Russian",
+            example="Новый телефон с гарантией",
         ),
-        "price": openapi.Schema(type=openapi.TYPE_INTEGER, description="Price of the item"),
+        "price": openapi.Schema(
+            type=openapi.TYPE_INTEGER, description="Price of the item", example=250
+        ),
         "category": openapi.Schema(
-            type=openapi.TYPE_INTEGER, description="ID of the selected category"
+            type=openapi.TYPE_INTEGER, description="ID of the selected category", example=5
         ),
         "photos": openapi.Schema(
             type=openapi.TYPE_ARRAY,
@@ -37,7 +45,6 @@ ad_create_schema = openapi.Schema(
         ),
     },
 )
-
 
 # ----------------------------
 # Schema for Ad detail response
@@ -48,42 +55,54 @@ ad_detail_response = openapi.Response(
     schema=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            "id": openapi.Schema(type=openapi.TYPE_INTEGER),
-            "name": openapi.Schema(type=openapi.TYPE_STRING),
-            "slug": openapi.Schema(type=openapi.TYPE_STRING),
-            "description": openapi.Schema(type=openapi.TYPE_STRING),
-            "price": openapi.Schema(type=openapi.TYPE_INTEGER),
+            "id": openapi.Schema(type=openapi.TYPE_INTEGER, example=1),
+            "name": openapi.Schema(type=openapi.TYPE_STRING, example="Phone"),
+            "slug": openapi.Schema(type=openapi.TYPE_STRING, example="phone"),
+            "description": openapi.Schema(type=openapi.TYPE_STRING, example="Brand new phone..."),
+            "price": openapi.Schema(type=openapi.TYPE_INTEGER, example=250),
             "photos": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        "id": openapi.Schema(type=openapi.TYPE_INTEGER),
-                        "image": openapi.Schema(type=openapi.TYPE_STRING, format="uri"),
+                        "id": openapi.Schema(type=openapi.TYPE_INTEGER, example=1),
+                        "image": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            format="uri",
+                            example="/media/products/img1.jpg",
+                        ),
                     },
                 ),
             ),
-            "published_at": openapi.Schema(type=openapi.TYPE_STRING, format="date-time"),
-            "address": openapi.Schema(type=openapi.TYPE_STRING),
+            "published_at": openapi.Schema(
+                type=openapi.TYPE_STRING, format="date-time", example="2025-08-07T12:34:56Z"
+            ),
+            "address": openapi.Schema(type=openapi.TYPE_STRING, example="Tashkent"),
             "seller": openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    "id": openapi.Schema(type=openapi.TYPE_INTEGER),
-                    "full_name": openapi.Schema(type=openapi.TYPE_STRING),
-                    "phone_number": openapi.Schema(type=openapi.TYPE_STRING),
-                    "profile_photo": openapi.Schema(type=openapi.TYPE_STRING, format="uri"),
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER, example=2),
+                    "full_name": openapi.Schema(type=openapi.TYPE_STRING, example="John Doe"),
+                    "phone_number": openapi.Schema(
+                        type=openapi.TYPE_STRING, example="+998901234567"
+                    ),
+                    "profile_photo": openapi.Schema(
+                        type=openapi.TYPE_STRING, format="uri", example="/media/profile/photo.jpg"
+                    ),
                 },
             ),
             "category": openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    "id": openapi.Schema(type=openapi.TYPE_INTEGER),
-                    "name": openapi.Schema(type=openapi.TYPE_STRING),
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
+                    "name": openapi.Schema(type=openapi.TYPE_STRING, example="Electronics"),
                 },
             ),
-            "is_liked": openapi.Schema(type=openapi.TYPE_BOOLEAN),
-            "view_count": openapi.Schema(type=openapi.TYPE_INTEGER),
-            "updated_time": openapi.Schema(type=openapi.TYPE_STRING, format="date-time"),
+            "is_liked": openapi.Schema(type=openapi.TYPE_BOOLEAN, example=False),
+            "view_count": openapi.Schema(type=openapi.TYPE_INTEGER, example=13),
+            "updated_time": openapi.Schema(
+                type=openapi.TYPE_STRING, format="date-time", example="2025-08-07T13:00:00Z"
+            ),
         },
     ),
     examples={
@@ -110,33 +129,19 @@ ad_detail_response = openapi.Response(
     },
 )
 
+# ----------------------------
+# Ad create response
+# ----------------------------
+
 ad_create_response = openapi.Response(
     description="Ad successfully created",
     schema=ad_detail_response.schema,
-    examples={
-        "application/json": {
-            "id": 1,
-            "name": "Phone",
-            "slug": "phone",
-            "description": "Brand new phone...",
-            "price": 250,
-            "photos": [{"id": 1, "image": "/media/products/img1.jpg"}],
-            "published_at": "2025-08-07T12:34:56Z",
-            "address": "Tashkent",
-            "seller": {
-                "id": 2,
-                "full_name": "John Doe",
-                "phone_number": "+998901234567",
-                "profile_photo": "/media/profile/photo.jpg",
-            },
-            "category": {"id": 5, "name": "Electronics"},
-            "is_liked": False,
-            "view_count": 13,
-            "updated_time": "2025-08-07T13:00:00Z",
-        }
-    },
+    examples=ad_detail_response.examples,
 )
 
+# ----------------------------
+# Categories with children
+# ----------------------------
 
 categories_with_children_response = openapi.Response(
     description="List of parent categories with nested child categories",
@@ -146,35 +151,43 @@ categories_with_children_response = openapi.Response(
             type=openapi.TYPE_OBJECT,
             properties={
                 "id": openapi.Schema(
-                    type=openapi.TYPE_INTEGER, description="ID of the parent category"
+                    type=openapi.TYPE_INTEGER, description="ID of the parent category", example=1
                 ),
                 "name": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="Name of the parent category"
+                    type=openapi.TYPE_STRING,
+                    description="Name of the parent category",
+                    example="Electronics",
                 ),
                 "icon": openapi.Schema(
                     type=openapi.TYPE_STRING,
                     format="uri",
                     description="Icon URL of the parent category",
+                    example="/media/categories/icon.png",
                 ),
                 "children": openapi.Schema(
                     type=openapi.TYPE_ARRAY,
+                    description="List of child categories",
                     items=openapi.Schema(
                         type=openapi.TYPE_OBJECT,
                         properties={
                             "id": openapi.Schema(
-                                type=openapi.TYPE_INTEGER, description="ID of the child category"
+                                type=openapi.TYPE_INTEGER,
+                                description="ID of the child category",
+                                example=2,
                             ),
                             "name": openapi.Schema(
-                                type=openapi.TYPE_STRING, description="Name of the child category"
+                                type=openapi.TYPE_STRING,
+                                description="Name of the child category",
+                                example="Phones",
                             ),
                             "icon": openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 format="uri",
                                 description="Icon URL of the child category",
+                                example="/media/categories/phone-icon.png",
                             ),
                         },
                     ),
-                    description="List of child categories",
                 ),
             },
         ),
@@ -194,7 +207,6 @@ categories_with_children_response = openapi.Response(
     },
 )
 
-
 # ----------------------------
 # Flat category list with counts
 # ----------------------------
@@ -206,15 +218,24 @@ category_list_response = openapi.Response(
         items=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "id": openapi.Schema(type=openapi.TYPE_INTEGER, description="ID of the category"),
+                "id": openapi.Schema(
+                    type=openapi.TYPE_INTEGER, description="ID of the category", example=1
+                ),
                 "name": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="Name of the category"
+                    type=openapi.TYPE_STRING,
+                    description="Name of the category",
+                    example="Furniture",
                 ),
                 "icon": openapi.Schema(
-                    type=openapi.TYPE_STRING, format="uri", description="Icon URL of the category"
+                    type=openapi.TYPE_STRING,
+                    format="uri",
+                    description="Icon URL of the category",
+                    example="/media/categories/chair.png",
                 ),
                 "product_count": openapi.Schema(
-                    type=openapi.TYPE_INTEGER, description="Number of ads in this category"
+                    type=openapi.TYPE_INTEGER,
+                    description="Number of ads in this category",
+                    example=12,
                 ),
             },
         ),
@@ -227,7 +248,12 @@ category_list_response = openapi.Response(
                 "icon": "/media/categories/chair.png",
                 "product_count": 12,
             },
-            {"id": 2, "name": "Books", "icon": "/media/categories/book.png", "product_count": 5},
+            {
+                "id": 2,
+                "name": "Books",
+                "icon": "/media/categories/book.png",
+                "product_count": 5,
+            },
         ]
     },
 )
