@@ -1,5 +1,6 @@
 from common.models import BaseModel
 from common.validators import icon_extensions
+from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
@@ -51,3 +52,15 @@ class Ad(models.Model):
 class AdPhoto(models.Model):
     ad = models.ForeignKey(Ad, related_name="photos", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="products/")
+
+
+class FavouriteProduct(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True
+    )
+    device_id = models.CharField(max_length=255, null=True, blank=True)
+    product = models.ForeignKey(Ad, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user or self.device_id} - {self.product}"

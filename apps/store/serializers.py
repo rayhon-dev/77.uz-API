@@ -2,7 +2,7 @@ from accounts.models import CustomUser
 from rest_framework import serializers
 from store.models import Category
 
-from .models import Ad, AdPhoto
+from .models import Ad, AdPhoto, FavouriteProduct
 
 
 class ChildCategorySerializer(serializers.Serializer):
@@ -164,3 +164,37 @@ class AdDetailSerializer(serializers.ModelSerializer):
         data["name"] = getattr(instance, f"name_{lang}", instance.name_uz)
         data["description"] = getattr(instance, f"description_{lang}", instance.description_uz)
         return data
+
+
+class FavouriteProductCreateByIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FavouriteProduct
+        fields = ["id", "device_id", "product", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+    def validate(self, attrs):
+        device_id = attrs.get("device_id")
+        product = attrs.get("product")
+
+        if FavouriteProduct.objects.filter(device_id=device_id, product=product).exists():
+            raise serializers.ValidationError("Bu mahsulot allaqachon sevimlilarda bor.")
+        return attrs
+
+
+class FavouriteProductCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FavouriteProduct
+        fields = ["id", "product", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        product = attrs.get("product")
+
+        if FavouriteProduct.objects.filter(user=user, product=product).exists():
+            raise serializers.ValidationError("Bu mahsulot allaqachon sevimlilarda bor.")
+        return attrs
+
+    def create(self, validated_data):
+        validated_data["user"] = self.context["request"].user
+        return super().create(validated_data)

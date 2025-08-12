@@ -257,3 +257,85 @@ category_list_response = openapi.Response(
         ]
     },
 )
+
+
+favourite_product_create_by_id_request = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=["device_id", "product"],
+    properties={
+        "device_id": openapi.Schema(
+            type=openapi.TYPE_STRING,
+            description="Unique device identifier for guest user",
+            example="device_12345_android",
+        ),
+        "product": openapi.Schema(
+            type=openapi.TYPE_INTEGER,
+            description="ID of the product to add to favourites",
+            example=12345,
+        ),
+    },
+)
+
+favourite_product_response = openapi.Response(
+    description="Favourite product entry details",
+    schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "id": openapi.Schema(type=openapi.TYPE_INTEGER, example=789),
+            "product": openapi.Schema(type=openapi.TYPE_INTEGER, example=12345),
+            "device_id": openapi.Schema(type=openapi.TYPE_STRING, example="device_12345_android"),
+            "created_at": openapi.Schema(
+                type=openapi.TYPE_STRING, format="date-time", example="2024-01-15T10:30:00Z"
+            ),
+        },
+    ),
+    examples={
+        "application/json": {
+            "id": 789,
+            "product": 12345,
+            "device_id": "device_12345_android",
+            "created_at": "2024-01-15T10:30:00Z",
+        }
+    },
+)
+
+
+favourite_product_create_request = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=["product"],
+    properties={
+        "product": openapi.Schema(
+            type=openapi.TYPE_INTEGER,
+            description="ID of the product to add to favourites",
+            example=12345,
+        ),
+    },
+)
+
+favourite_product_auth_response = openapi.Response(
+    description="Favourite product entry details for authenticated user",
+    schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "id": openapi.Schema(type=openapi.TYPE_INTEGER, example=789),
+            "product": openapi.Schema(type=openapi.TYPE_INTEGER, example=12345),
+            "created_at": openapi.Schema(
+                type=openapi.TYPE_STRING, format="date-time", example="2024-01-15T10:30:00Z"
+            ),
+        },
+    ),
+    examples={
+        "application/json": {"id": 789, "product": 12345, "created_at": "2024-01-15T10:30:00Z"}
+    },
+)
+
+
+favourite_product_delete_response = openapi.Response(
+    description="Favourite product deleted successfully",
+    schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, example="Favourite product deleted.")
+        },
+    ),
+)
