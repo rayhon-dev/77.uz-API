@@ -1,13 +1,14 @@
 import uuid
 
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 
 
 class BaseModel(models.Model):
     guid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False, db_index=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_time = models.DateTimeField(default=timezone.now, editable=False)
+    updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True

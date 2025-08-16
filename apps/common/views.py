@@ -8,7 +8,7 @@ from .openapi_schema import (
     region_with_districts_response,
     setting_response,
 )
-from .pagination import CustomPagination
+from .pagination import PageListPagination
 from .serializers import (
     PageDetailSerializer,
     PageListSerializer,
@@ -22,7 +22,7 @@ from .utils.custom_response_decorator import custom_response
 class PageListAPIView(generics.ListAPIView):
     queryset = Page.objects.all()
     serializer_class = PageListSerializer
-    pagination_class = CustomPagination
+    pagination_class = PageListPagination
 
     @swagger_auto_schema(
         operation_summary="List pages",

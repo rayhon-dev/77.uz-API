@@ -31,4 +31,5 @@ urlpatterns = [
         views.FavouriteProductDeleteView.as_view(),
         name="favourite-delete",
     ),
+    path("list/ads/", views.AdListView.as_view(), name="list-ads"),
 ]

@@ -117,6 +117,16 @@ class AdCreateSerializer(serializers.ModelSerializer):
         lang = self.context["request"].LANGUAGE_CODE
         return getattr(obj, f"name_{lang}", obj.name_uz)
 
+    def get_description(self, obj):
+        lang = self.context["request"].LANGUAGE_CODE
+        return getattr(obj, f"description_{lang}", obj.description_uz)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if not data.get("description"):
+            data.pop("description")
+        return data
+
 
 class AdPhotoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -199,3 +209,45 @@ class FavouriteProductSerializer(serializers.ModelSerializer):
             obj, _ = FavouriteProduct.objects.get_or_create(device_id=device_id, product=product)
 
         return obj
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+
+        if request and request.user.is_authenticated:
+            data.pop("device_id", None)
+
+        return data
+
+
+class AdListSerializer(serializers.ModelSerializer):
+    photo = serializers.SerializerMethodField()
+    address = serializers.CharField(source="address.name", read_only=True)
+    seller = serializers.PrimaryKeyRelatedField(read_only=True)
+    is_liked = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Ad
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "price",
+            "photo",
+            "published_at",
+            "address",
+            "seller",
+            "is_liked",
+            "updated_time",
+        ]
+
+    def get_photo(self, obj):
+        first_photo = obj.photos.first()
+        return first_photo.image.url if first_photo else None
+
+    def get_is_liked(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            return obj.likes.filter(id=user.id).exists()
+        return False

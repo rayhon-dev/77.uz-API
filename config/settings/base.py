@@ -32,6 +32,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_yasg",
+    "smart_selects",
     "django_cleanup.apps.CleanupSelectedConfig",
 ]
 
@@ -166,6 +167,11 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ),
     "EXCEPTION_HANDLER": "common.utils.custom_exception_handler.custom_exception_handler",
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
 }
 
 # Simple JWT

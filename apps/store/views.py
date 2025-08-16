@@ -1,8 +1,12 @@
+from common.pagination import AdListPagination
 from common.utils.custom_response_decorator import custom_response
 from django.db.models import Count
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, serializers
+from rest_framework.filters import OrderingFilter, SearchFilter
 
+from .filters import AdFilter
 from .models import Ad, Category, FavouriteProduct
 from .openapi_schema import (
     ad_create_response,
@@ -15,6 +19,7 @@ from .permissions import IsSeller
 from .serializers import (
     AdCreateSerializer,
     AdDetailSerializer,
+    AdListSerializer,
     CategorySerializer,
     CategoryWithChildrenSerializer,
     FavouriteProductSerializer,
@@ -132,3 +137,15 @@ class FavouriteProductDeleteByIDView(generics.DestroyAPIView):
     def get_object(self):
         product_id = self.kwargs["pk"]
         return self.get_queryset().get(product_id=product_id)
+
+
+@custom_response
+class AdListView(generics.ListAPIView):
+    queryset = Ad.objects.all()
+    serializer_class = AdListSerializer
+    pagination_class = AdListPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = AdFilter
+    search_fields = ["name"]
+    ordering_fields = ["published_at", "price", "view_count"]
+    ordering = ["-published_at"]

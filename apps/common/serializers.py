@@ -10,8 +10,8 @@ class PageDetailSerializer(serializers.Serializer):
     slug = serializers.SlugField()
     title = serializers.CharField()
     content = serializers.CharField()
-    created_at = serializers.DateTimeField()
-    updated_at = serializers.DateTimeField()
+    created_time = serializers.DateTimeField()
+    updated_time = serializers.DateTimeField()
 
 
 class DistrictSerializer(serializers.Serializer):
