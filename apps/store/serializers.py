@@ -166,35 +166,36 @@ class AdDetailSerializer(serializers.ModelSerializer):
         return data
 
 
-class FavouriteProductCreateByIdSerializer(serializers.ModelSerializer):
+class FavouriteProductSerializer(serializers.ModelSerializer):
+    product = serializers.PrimaryKeyRelatedField(queryset=Ad.objects.all())
+
     class Meta:
         model = FavouriteProduct
-        fields = ["id", "device_id", "product", "created_at"]
+        fields = ["id", "product", "device_id", "created_at"]
         read_only_fields = ["id", "created_at"]
-
-    def validate(self, attrs):
-        device_id = attrs.get("device_id")
-        product = attrs.get("product")
-
-        if FavouriteProduct.objects.filter(device_id=device_id, product=product).exists():
-            raise serializers.ValidationError("Bu mahsulot allaqachon sevimlilarda bor.")
-        return attrs
-
-
-class FavouriteProductCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FavouriteProduct
-        fields = ["id", "product", "created_at"]
-        read_only_fields = ["id", "created_at"]
+        extra_kwargs = {
+            "device_id": {"required": False},
+        }
 
     def validate(self, attrs):
         user = self.context["request"].user
-        product = attrs.get("product")
+        device_id = attrs.get("device_id")
 
-        if FavouriteProduct.objects.filter(user=user, product=product).exists():
-            raise serializers.ValidationError("Bu mahsulot allaqachon sevimlilarda bor.")
+        if not user.is_authenticated and not device_id:
+            raise serializers.ValidationError("Anonymous users must provide a device_id.")
+
         return attrs
 
     def create(self, validated_data):
-        validated_data["user"] = self.context["request"].user
-        return super().create(validated_data)
+        user = (
+            self.context["request"].user if self.context["request"].user.is_authenticated else None
+        )
+        device_id = validated_data.get("device_id")
+        product = validated_data["product"]
+
+        if user:
+            obj, _ = FavouriteProduct.objects.get_or_create(user=user, product=product)
+        else:
+            obj, _ = FavouriteProduct.objects.get_or_create(device_id=device_id, product=product)
+
+        return obj

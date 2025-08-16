@@ -13,12 +13,12 @@ urlpatterns = [
     path("category/", views.CategoryListView.as_view(), name="category-list"),
     path(
         "favourite-product-create-by-id/",
-        views.FavouriteProductCreateByIdView.as_view(),
+        views.FavouriteProductCreateByIDView.as_view(),
         name="favourite-create-by-id",
     ),
     path(
         "favourite-product-by-id/<int:pk>/delete/",
-        views.FavouriteProductDeleteByIdView.as_view(),
+        views.FavouriteProductDeleteByIDView.as_view(),
         name="favourite-delete-by-id",
     ),
     path(

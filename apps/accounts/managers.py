@@ -13,8 +13,10 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("status", self.model.Status.PENDING)
 
         user = self.model(phone_number=phone_number, **extra_fields)
-
-        user.save_unusable_password()
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save(using=self._db)
         return user
 
@@ -31,8 +33,13 @@ class CustomUserManager(BaseUserManager):
             raise ValueError("Superuser must have is_staff=True.")
         if not extra_fields.get("is_superuser"):
             raise ValueError("Superuser must have is_superuser=True.")
+
         user = self.model(phone_number=phone_number, **extra_fields)
-        user.set_unusable_password()
+
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save(using=self._db)
         return user
 
@@ -47,7 +54,10 @@ class CustomUserManager(BaseUserManager):
             raise ValueError("Admin must have role=admin.")
 
         user = self.model(phone_number=phone_number, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
 
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
+        user.save(using=self._db)
         return user
