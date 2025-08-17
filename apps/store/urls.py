@@ -32,4 +32,5 @@ urlpatterns = [
         name="favourite-delete",
     ),
     path("list/ads/", views.AdListView.as_view(), name="list-ads"),
+    path("my-ads/", views.MyAdsListAPIView.as_view(), name="my-ads-list"),
 ]

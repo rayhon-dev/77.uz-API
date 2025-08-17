@@ -23,6 +23,7 @@ from .serializers import (
     CategorySerializer,
     CategoryWithChildrenSerializer,
     FavouriteProductSerializer,
+    MyAdsListSerializer,
 )
 
 
@@ -149,3 +150,14 @@ class AdListView(generics.ListAPIView):
     search_fields = ["name"]
     ordering_fields = ["published_at", "price", "view_count"]
     ordering = ["-published_at"]
+
+
+@custom_response
+class MyAdsListAPIView(generics.ListAPIView):
+    serializer_class = MyAdsListSerializer
+    permission_classes = [IsSeller]
+    filterset_fields = ["status"]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Ad.objects.filter(seller=user).order_by("-published_at")

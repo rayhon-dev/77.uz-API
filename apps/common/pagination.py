@@ -12,4 +12,4 @@ class PageListPagination(CustomPagination):
 
 
 class AdListPagination(CustomPagination):
-    page_size = 10
+    page_size = 20

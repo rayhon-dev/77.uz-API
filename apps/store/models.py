@@ -27,6 +27,13 @@ class Category(BaseModel):
 
 
 class Ad(models.Model):
+    STATUS_CHOICES = [
+        ("active", "Active"),
+        ("inactive", "Inactive"),
+        ("pending", "Pending"),
+        ("rejected", "Rejected"),
+    ]
+
     name = models.CharField(max_length=255)
     description = models.TextField()
     slug = models.SlugField(unique=True, blank=True)
@@ -39,6 +46,8 @@ class Ad(models.Model):
     is_published = models.BooleanField(default=False)
     view_count = models.PositiveIntegerField(default=0)
     likes = models.ManyToManyField("accounts.CustomUser", related_name="liked_ads", blank=True)
+    is_top = models.BooleanField(default=False)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
 
     def save(self, *args, **kwargs):
         if not self.slug:

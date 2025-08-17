@@ -223,7 +223,7 @@ class FavouriteProductSerializer(serializers.ModelSerializer):
 class AdListSerializer(serializers.ModelSerializer):
     photo = serializers.SerializerMethodField()
     address = serializers.CharField(source="address.name", read_only=True)
-    seller = serializers.PrimaryKeyRelatedField(read_only=True)
+    seller = SellerShortSerializer(read_only=True)
     is_liked = serializers.SerializerMethodField()
 
     class Meta:
@@ -237,6 +237,39 @@ class AdListSerializer(serializers.ModelSerializer):
             "published_at",
             "address",
             "seller",
+            "is_liked",
+            "updated_time",
+        ]
+
+    def get_photo(self, obj):
+        first_photo = obj.photos.first()
+        return first_photo.image.url if first_photo else None
+
+    def get_is_liked(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            return obj.likes.filter(id=user.id).exists()
+        return False
+
+
+class MyAdsListSerializer(serializers.ModelSerializer):
+    photo = serializers.SerializerMethodField()
+    address = serializers.CharField(source="address.name", read_only=True)
+    is_liked = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Ad
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "price",
+            "photo",
+            "published_at",
+            "address",
+            "status",
+            "view_count",
             "is_liked",
             "updated_time",
         ]
