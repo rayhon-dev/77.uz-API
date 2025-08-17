@@ -23,6 +23,7 @@ from .serializers import (
     CategorySerializer,
     CategoryWithChildrenSerializer,
     FavouriteProductSerializer,
+    MyAdsDetailSerializer,
     MyAdsListSerializer,
 )
 
@@ -161,3 +162,12 @@ class MyAdsListAPIView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return Ad.objects.filter(seller=user).order_by("-published_at")
+
+
+@custom_response
+class MyAdDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = MyAdsDetailSerializer
+    lookup_field = "pk"
+
+    def get_queryset(self):
+        return Ad.objects.filter(seller=self.request.user)

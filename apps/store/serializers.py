@@ -284,3 +284,33 @@ class MyAdsListSerializer(serializers.ModelSerializer):
         if user and user.is_authenticated:
             return obj.likes.filter(id=user.id).exists()
         return False
+
+
+class MyAdsDetailSerializer(serializers.ModelSerializer):
+    photos = serializers.SerializerMethodField()
+    category = serializers.PrimaryKeyRelatedField(read_only=True)
+    status = serializers.ChoiceField(choices=Ad.STATUS_CHOICES, read_only=True)
+
+    class Meta:
+        model = Ad
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "category",
+            "price",
+            "photos",
+            "published_at",
+            "status",
+            "view_count",
+            "updated_time",
+        ]
+
+    def get_photos(self, obj):
+        request = self.context.get("request")
+        photos = obj.photos.all()
+        return [
+            request.build_absolute_uri(photo.image.url) if request else photo.image.url
+            for photo in photos
+        ]
