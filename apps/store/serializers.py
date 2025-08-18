@@ -1,4 +1,5 @@
 from accounts.models import CustomUser
+from django.utils.text import slugify
 from rest_framework import serializers
 from store.models import Category
 
@@ -287,9 +288,10 @@ class MyAdsListSerializer(serializers.ModelSerializer):
 
 
 class MyAdsDetailSerializer(serializers.ModelSerializer):
+    new_photos = serializers.ListField(
+        child=serializers.URLField(), write_only=True, required=False
+    )
     photos = serializers.SerializerMethodField()
-    category = serializers.PrimaryKeyRelatedField(read_only=True)
-    status = serializers.ChoiceField(choices=Ad.STATUS_CHOICES, read_only=True)
 
     class Meta:
         model = Ad
@@ -305,12 +307,29 @@ class MyAdsDetailSerializer(serializers.ModelSerializer):
             "status",
             "view_count",
             "updated_time",
+            "new_photos",
+        ]
+        read_only_fields = [
+            "id",
+            "slug",
+            "published_at",
+            "status",
+            "view_count",
+            "updated_time",
+            "photos",
         ]
 
     def get_photos(self, obj):
-        request = self.context.get("request")
-        photos = obj.photos.all()
-        return [
-            request.build_absolute_uri(photo.image.url) if request else photo.image.url
-            for photo in photos
-        ]
+        return [photo.image.url for photo in obj.photos.all()]
+
+    def update(self, instance, validated_data):
+        if "name" in validated_data:
+            instance.slug = slugify(validated_data["name"])
+
+        new_photos = validated_data.pop("new_photos", None)
+        if new_photos:
+            instance.photos.all().delete()
+            for url in new_photos:
+                AdPhoto.objects.create(ad=instance, image=url)
+
+        return super().update(instance, validated_data)

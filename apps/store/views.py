@@ -167,6 +167,7 @@ class MyAdsListAPIView(generics.ListAPIView):
 @custom_response
 class MyAdDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MyAdsDetailSerializer
+    permission_classes = [IsSeller]
     lookup_field = "pk"
 
     def get_queryset(self):

@@ -5,10 +5,10 @@ from rest_framework_simplejwt.tokens import UntypedToken
 from .models import Address, Category, CustomUser
 
 
-class AddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Address
-        fields = ["name", "lat", "long"]
+class AddressSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    lat = serializers.FloatField()
+    long = serializers.FloatField()
 
 
 class SellerRegistrationSerializer(serializers.ModelSerializer):
