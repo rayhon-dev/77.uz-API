@@ -1,4 +1,4 @@
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 
 
 class CustomPagination(PageNumberPagination):
@@ -15,5 +15,16 @@ class AdListPagination(CustomPagination):
     page_size = 20
 
 
+class MyAdsListPagination(CustomPagination):
+    page_size = 10
+
+
 class MyFavouriteProductPagination(CustomPagination):
     page_size = 10
+
+
+class MySearchPagination(LimitOffsetPagination):
+    default_limit = 10
+    max_limit = 100
+    limit_query_param = "limit"
+    offset_query_param = "offset"

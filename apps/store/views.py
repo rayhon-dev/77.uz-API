@@ -1,4 +1,9 @@
-from common.pagination import AdListPagination, MyFavouriteProductPagination
+from common.pagination import (
+    AdListPagination,
+    MyAdsListPagination,
+    MyFavouriteProductPagination,
+    MySearchPagination,
+)
 from common.utils.custom_response_decorator import custom_response
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,7 +13,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 
 from .filters import AdFilter
-from .models import Ad, Category, FavouriteProduct
+from .models import Ad, AdPhoto, Category, FavouriteProduct, MySearch
 from .openapi_schema import (
     ad_create_response,
     ad_create_schema,
@@ -21,12 +26,15 @@ from .serializers import (
     AdCreateSerializer,
     AdDetailSerializer,
     AdListSerializer,
+    AdPhotoSerializer,
     CategorySerializer,
     CategoryWithChildrenSerializer,
     FavouriteProductListSerializer,
     FavouriteProductSerializer,
     MyAdsDetailSerializer,
     MyAdsListSerializer,
+    MySearchCreateSerializer,
+    MySearchSerializer,
 )
 
 
@@ -160,6 +168,7 @@ class MyAdsListAPIView(generics.ListAPIView):
     serializer_class = MyAdsListSerializer
     permission_classes = [IsSeller]
     filterset_fields = ["status"]
+    pagination_class = MyAdsListPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -213,3 +222,46 @@ class MyFavouriteProductByIdView(generics.ListAPIView):
         if not device_id:
             raise ValidationError({"device_id": "This field is required in query parameters."})
         return super().list(request, *args, **kwargs)
+
+
+@custom_response
+class MySearchCreateView(generics.CreateAPIView):
+    queryset = MySearch.objects.all()
+    serializer_class = MySearchCreateSerializer
+    permission_classes = [IsSeller]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+@custom_response
+class MySearchListView(generics.ListAPIView):
+    serializer_class = MySearchSerializer
+    pagination_class = MySearchPagination
+    permission_classes = [IsSeller]
+
+    def get_queryset(self):
+        return MySearch.objects.filter(user=self.request.user).order_by("-created_at")
+
+
+@custom_response
+class MySearchDeleteView(generics.DestroyAPIView):
+    queryset = MySearch.objects.all()
+    permission_classes = [IsSeller]
+
+    def get_queryset(self):
+        return MySearch.objects.filter(user=self.request.user)
+
+
+@custom_response
+class ProductDownloadView(generics.RetrieveAPIView):
+    queryset = Ad.objects.all()
+    serializer_class = AdDetailSerializer
+    lookup_field = "slug"
+
+
+@custom_response
+class ProductImageCreateView(generics.CreateAPIView):
+    queryset = AdPhoto.objects.all()
+    serializer_class = AdPhotoSerializer
+    permission_classes = [IsSeller]

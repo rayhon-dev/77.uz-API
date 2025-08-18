@@ -1,9 +1,10 @@
 from accounts.models import CustomUser
+from common.models import Region
 from django.utils.text import slugify
 from rest_framework import serializers
 from store.models import Category
 
-from .models import Ad, AdPhoto, FavouriteProduct
+from .models import Ad, AdPhoto, FavouriteProduct, MySearch
 
 
 class ChildCategorySerializer(serializers.Serializer):
@@ -132,7 +133,13 @@ class AdCreateSerializer(serializers.ModelSerializer):
 class AdPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdPhoto
-        fields = ["id", "image"]
+        fields = ["id", "ad", "image", "is_main", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+    def validate(self, attrs):
+        if not attrs.get("image"):
+            raise serializers.ValidationError("Image is required.")
+        return attrs
 
 
 class AdDetailSerializer(serializers.ModelSerializer):
@@ -357,3 +364,43 @@ class FavouriteProductListSerializer(serializers.Serializer):
     def get_is_liked(self, obj):
         user = self.context["request"].user
         return obj.product.likes.filter(id=user.id).exists() if user.is_authenticated else False
+
+
+class CategoryForSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ["id", "name", "icon"]
+
+
+class MySearchSerializer(serializers.ModelSerializer):
+    category = CategoryForSearchSerializer(read_only=True)
+
+    class Meta:
+        model = MySearch
+        fields = [
+            "id",
+            "category",
+            "search_query",
+            "price_min",
+            "price_max",
+            "region",
+            "created_at",
+        ]
+
+
+class MySearchCreateSerializer(serializers.ModelSerializer):
+    region_id = serializers.PrimaryKeyRelatedField(
+        queryset=Region.objects.all(), source="region", required=False, allow_null=True
+    )
+
+    class Meta:
+        model = MySearch
+        fields = [
+            "id",
+            "category",
+            "search_query",
+            "price_min",
+            "price_max",
+            "region_id",
+            "created_at",
+        ]

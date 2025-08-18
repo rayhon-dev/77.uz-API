@@ -42,4 +42,7 @@ urlpatterns = [
     path(
         "my-favourite-product/", views.MyFavouriteProductView.as_view(), name="my-favourite-product"
     ),
+    path("my-search/", views.MySearchCreateView.as_view(), name="my-search-create"),
+    path("my-search/list/", views.MySearchListView.as_view(), name="my-search-list"),
+    path("my-search/<int:pk>/delete/", views.MySearchDeleteView.as_view(), name="my-search-delete"),
 ]
