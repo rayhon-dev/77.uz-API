@@ -333,3 +333,27 @@ class MyAdsDetailSerializer(serializers.ModelSerializer):
                 AdPhoto.objects.create(ad=instance, image=url)
 
         return super().update(instance, validated_data)
+
+
+class FavouriteProductListSerializer(serializers.Serializer):
+    id = serializers.IntegerField(source="product.id", read_only=True)
+    name = serializers.CharField(source="product.name", read_only=True)
+    slug = serializers.SlugField(source="product.slug", read_only=True)
+    description = serializers.CharField(source="product.description", read_only=True)
+    price = serializers.IntegerField(source="product.price", read_only=True)
+    published_at = serializers.DateTimeField(source="product.published_at", read_only=True)
+    updated_time = serializers.DateTimeField(source="product.updated_time", read_only=True)
+
+    address = serializers.CharField(source="product.address.name", read_only=True)
+    seller = serializers.CharField(source="product.seller.get_full_name", read_only=True)
+
+    photo = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+
+    def get_photo(self, obj):
+        photo = obj.product.photos.first()
+        return photo.image.url if photo else None
+
+    def get_is_liked(self, obj):
+        user = self.context["request"].user
+        return obj.product.likes.filter(id=user.id).exists() if user.is_authenticated else False

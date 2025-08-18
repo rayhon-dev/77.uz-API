@@ -13,3 +13,7 @@ class PageListPagination(CustomPagination):
 
 class AdListPagination(CustomPagination):
     page_size = 20
+
+
+class MyFavouriteProductPagination(CustomPagination):
+    page_size = 10

@@ -34,4 +34,12 @@ urlpatterns = [
     path("list/ads/", views.AdListView.as_view(), name="list-ads"),
     path("my-ads/", views.MyAdsListAPIView.as_view(), name="my-ads-list"),
     path("my-ads/<int:pk>/", views.MyAdDetailUpdateDeleteView.as_view(), name="my-ads-detail"),
+    path(
+        "my-favourite-product-by-id/",
+        views.MyFavouriteProductByIdView.as_view(),
+        name="my-favourite-product-by-id",
+    ),
+    path(
+        "my-favourite-product/", views.MyFavouriteProductView.as_view(), name="my-favourite-product"
+    ),
 ]

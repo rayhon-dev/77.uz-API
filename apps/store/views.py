@@ -1,9 +1,10 @@
-from common.pagination import AdListPagination
+from common.pagination import AdListPagination, MyFavouriteProductPagination
 from common.utils.custom_response_decorator import custom_response
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 
 from .filters import AdFilter
@@ -22,6 +23,7 @@ from .serializers import (
     AdListSerializer,
     CategorySerializer,
     CategoryWithChildrenSerializer,
+    FavouriteProductListSerializer,
     FavouriteProductSerializer,
     MyAdsDetailSerializer,
     MyAdsListSerializer,
@@ -172,3 +174,42 @@ class MyAdDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Ad.objects.filter(seller=self.request.user)
+
+
+@custom_response
+class MyFavouriteProductView(generics.ListAPIView):
+    serializer_class = FavouriteProductListSerializer
+    pagination_class = MyFavouriteProductPagination
+    permission_classes = [IsSeller]
+
+    def get_queryset(self):
+        category_id = self.request.query_params.get("category")
+        queryset = FavouriteProduct.objects.filter(user=self.request.user)
+        if category_id:
+            queryset = queryset.filter(product__category_id=category_id)
+        return (
+            queryset.select_related("product", "product__seller", "product__address")
+            .prefetch_related("product__photos")
+            .order_by("-id")
+        )
+
+
+@custom_response
+class MyFavouriteProductByIdView(generics.ListAPIView):
+    serializer_class = FavouriteProductListSerializer
+    pagination_class = MyFavouriteProductPagination
+
+    def get_queryset(self):
+        device_id = self.request.query_params.get("device_id")
+        return (
+            FavouriteProduct.objects.filter(device_id=device_id)
+            .select_related("product", "product__seller", "product__address")
+            .prefetch_related("product__photos")
+            .order_by("-id")
+        )
+
+    def list(self, request, *args, **kwargs):
+        device_id = request.query_params.get("device_id")
+        if not device_id:
+            raise ValidationError({"device_id": "This field is required in query parameters."})
+        return super().list(request, *args, **kwargs)
