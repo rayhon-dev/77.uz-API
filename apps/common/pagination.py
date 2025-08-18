@@ -7,6 +7,13 @@ class CustomPagination(PageNumberPagination):
     max_page_size = 100
 
 
+class CustomLimitOffsetPagination(LimitOffsetPagination):
+    default_limit = 10
+    max_limit = 100
+    limit_query_param = "limit"
+    offset_query_param = "offset"
+
+
 class PageListPagination(CustomPagination):
     page_size = 10
 
@@ -23,8 +30,9 @@ class MyFavouriteProductPagination(CustomPagination):
     page_size = 10
 
 
-class MySearchPagination(LimitOffsetPagination):
-    default_limit = 10
-    max_limit = 100
-    limit_query_param = "limit"
-    offset_query_param = "offset"
+class MySearchPagination(CustomLimitOffsetPagination):
+    pass
+
+
+class SearchListPagination(CustomLimitOffsetPagination):
+    pass

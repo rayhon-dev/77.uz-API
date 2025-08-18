@@ -131,19 +131,35 @@ class AdCreateSerializer(serializers.ModelSerializer):
 
 
 class AdPhotoSerializer(serializers.ModelSerializer):
+    product_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = AdPhoto
-        fields = ["id", "ad", "image", "is_main", "created_at"]
+        fields = ["id", "image", "is_main", "product_id", "created_at"]
         read_only_fields = ["id", "created_at"]
 
-    def validate(self, attrs):
-        if not attrs.get("image"):
-            raise serializers.ValidationError("Image is required.")
-        return attrs
+    def create(self, validated_data):
+        product_id = validated_data.pop("product_id")
+        try:
+            ad = Ad.objects.get(id=product_id)
+        except Ad.DoesNotExist:
+            raise serializers.ValidationError(
+                {"product_id": f"Ad with id={product_id} does not exist."}
+            )
+        return AdPhoto.objects.create(ad=ad, **validated_data)
+
+    def to_representation(self, instance):
+        return {
+            "id": instance.id,
+            "image": instance.image.url if instance.image else None,
+            "is_main": instance.is_main,
+            "product_id": instance.ad.id,
+            "created_at": instance.created_at,
+        }
 
 
 class AdDetailSerializer(serializers.ModelSerializer):
-    photos = AdPhotoSerializer(many=True, read_only=True)
+    photos = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
     seller = SellerShortSerializer(read_only=True)
     category = CategoryShortSerializer(read_only=True)
@@ -167,6 +183,9 @@ class AdDetailSerializer(serializers.ModelSerializer):
             "updated_time",
         ]
 
+    def get_photos(self, obj):
+        return [photo.image.url for photo in obj.photos.all()]
+
     def get_address(self, obj):
         return obj.seller.address.name if obj.seller.address else None
 
@@ -180,7 +199,7 @@ class AdDetailSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         lang = self.context["request"].LANGUAGE_CODE
         data["name"] = getattr(instance, f"name_{lang}", instance.name_uz)
-        data["description"] = getattr(instance, f"description_{lang}", instance.description_uz)
+        data["description"] = getattr(instance, f"description_{lang}", None) or ""
         return data
 
 
@@ -404,3 +423,82 @@ class MySearchCreateSerializer(serializers.ModelSerializer):
             "region_id",
             "created_at",
         ]
+
+
+class SearchCategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    type = serializers.SerializerMethodField()
+    icon = serializers.SerializerMethodField()
+
+    def get_type(self, obj):
+        return "category"
+
+    def get_icon(self, obj):
+        return obj.icon.url if obj.icon else None
+
+
+class SearchProductSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    type = serializers.SerializerMethodField()
+    icon = serializers.SerializerMethodField()
+
+    def get_type(self, obj):
+        return "product"
+
+    def get_icon(self, obj):
+        main_photo = obj.photos.filter(is_main=True).first()
+        if main_photo:
+            return main_photo.image.url
+        first_photo = obj.photos.first()
+        return first_photo.image.url if first_photo else None
+
+
+class SearchCompleteSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    icon = serializers.SerializerMethodField()
+
+    def get_icon(self, obj):
+        main_photo = obj.photos.filter(is_main=True).first()
+        if main_photo:
+            return main_photo.image.url
+        first_photo = obj.photos.first()
+        return first_photo.image.url if first_photo else None
+
+
+class SearchCountSerializer(serializers.Serializer):
+    id = serializers.IntegerField(source="product.id")
+    category = serializers.IntegerField(source="product.category.id")
+    search_count = serializers.IntegerField()
+    updated_at = serializers.DateTimeField()
+
+
+class PopularSearchSerializer(serializers.Serializer):
+    id = serializers.IntegerField(source="product.id")
+    name = serializers.CharField(source="product.name")
+    icon = serializers.SerializerMethodField()
+    search_count = serializers.IntegerField()
+
+    def get_icon(self, obj):
+        main_photo = obj.product.photos.filter(is_main=True).first()
+        if main_photo:
+            return main_photo.image.url
+        first_photo = obj.product.photos.first()
+        return first_photo.image.url if first_photo else None
+
+
+class SubCategorySerializer(serializers.ModelSerializer):
+    product_count = serializers.SerializerMethodField()
+    icon = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Category
+        fields = ["id", "name", "icon", "product_count"]
+
+    def get_product_count(self, obj):
+        return "{:,}".format(obj.ad_set.count())
+
+    def get_icon(self, obj):
+        return obj.icon.url if obj.icon else None

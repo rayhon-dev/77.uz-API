@@ -45,4 +45,25 @@ urlpatterns = [
     path("my-search/", views.MySearchCreateView.as_view(), name="my-search-create"),
     path("my-search/list/", views.MySearchListView.as_view(), name="my-search-list"),
     path("my-search/<int:pk>/delete/", views.MySearchDeleteView.as_view(), name="my-search-delete"),
+    path(
+        "product-download/<slug:slug>/",
+        views.ProductDownloadView.as_view(),
+        name="product-download",
+    ),
+    path(
+        "product-image-create/", views.ProductImageCreateView.as_view(), name="product-image-create"
+    ),
+    path(
+        "search/category-product/",
+        views.CategoryProductSearchView.as_view(),
+        name="category-product-search",
+    ),
+    path("search/complete/", views.SearchCompleteView.as_view(), name="search-complete"),
+    path(
+        "search/count-increase/<int:product_id>/",
+        views.SearchCountIncreaseView.as_view(),
+        name="search-count",
+    ),
+    path("search/populars/", views.PopularsView.as_view(), name="popular-searches"),
+    path("search/sub-category/", views.SubCategoryListView.as_view(), name="sub-category-list"),
 ]

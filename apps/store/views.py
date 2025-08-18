@@ -5,15 +5,17 @@ from common.pagination import (
     MySearchPagination,
 )
 from common.utils.custom_response_decorator import custom_response
-from django.db.models import Count
+from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.response import Response
 
 from .filters import AdFilter
-from .models import Ad, AdPhoto, Category, FavouriteProduct, MySearch
+from .models import Ad, AdPhoto, Category, FavouriteProduct, MySearch, SearchCount
 from .openapi_schema import (
     ad_create_response,
     ad_create_schema,
@@ -35,6 +37,12 @@ from .serializers import (
     MyAdsListSerializer,
     MySearchCreateSerializer,
     MySearchSerializer,
+    PopularSearchSerializer,
+    SearchCategorySerializer,
+    SearchCompleteSerializer,
+    SearchCountSerializer,
+    SearchProductSerializer,
+    SubCategorySerializer,
 )
 
 
@@ -262,6 +270,90 @@ class ProductDownloadView(generics.RetrieveAPIView):
 
 @custom_response
 class ProductImageCreateView(generics.CreateAPIView):
-    queryset = AdPhoto.objects.all()
     serializer_class = AdPhotoSerializer
+    queryset = AdPhoto.objects.all()
     permission_classes = [IsSeller]
+
+
+@custom_response
+class CategoryProductSearchView(generics.ListAPIView):
+
+    def get_queryset(self):
+        q = self.request.query_params.get("q", "")
+        categories = list(Category.objects.filter(name__icontains=q))
+        products = list(
+            Ad.objects.filter(Q(name__icontains=q) | Q(description__icontains=q), status="active")
+        )
+        return categories + products
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        results = []
+
+        for obj in queryset:
+            if isinstance(obj, Category):
+                results.append(
+                    SearchCategorySerializer(obj, context=self.get_serializer_context()).data
+                )
+            else:
+                results.append(
+                    SearchProductSerializer(obj, context=self.get_serializer_context()).data
+                )
+
+        return Response(results)
+
+
+@custom_response
+class SearchCompleteView(generics.ListAPIView):
+    serializer_class = SearchCompleteSerializer
+
+    def get_queryset(self):
+        q = self.request.query_params.get("q", "")
+        return Ad.objects.filter(
+            Q(name__icontains=q) | Q(description__icontains=q), status="active"
+        ).order_by("name")
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        results = SearchCompleteSerializer(queryset, many=True).data
+        return Response(results)
+
+
+@custom_response
+class SearchCountIncreaseView(generics.RetrieveAPIView):
+    serializer_class = SearchCountSerializer
+    queryset = Ad.objects.all()
+
+    def get_object(self):
+        product_id = self.kwargs["product_id"]
+        product = get_object_or_404(Ad, id=product_id)
+
+        search_count, created = SearchCount.objects.get_or_create(product=product)
+        search_count.search_count += 1
+        search_count.save()
+
+        return search_count
+
+
+@custom_response
+class PopularsView(generics.ListAPIView):
+    serializer_class = PopularSearchSerializer
+
+    def get_queryset(self):
+        return SearchCount.objects.select_related("product").order_by("-search_count")
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        results = PopularSearchSerializer(queryset, many=True).data
+        return Response(results)
+
+
+@custom_response
+class SubCategoryListView(generics.ListAPIView):
+    serializer_class = SubCategorySerializer
+
+    def get_queryset(self):
+        parent_id = self.request.query_params.get("parent__id")
+        if parent_id:
+            return Category.objects.filter(parent_id=parent_id)
+        return Category.objects.filter(parent__isnull=False)
