@@ -60,7 +60,7 @@ urlpatterns = [
     ),
     path("search/complete/", views.SearchCompleteView.as_view(), name="search-complete"),
     path(
-        "search/count-increase/<int:product_id>/",
+        "search/count-increase/<int:category_id>/",
         views.SearchCountIncreaseView.as_view(),
         name="search-count",
     ),

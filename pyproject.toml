@@ -27,7 +27,7 @@ exclude = '''
 '''
 
 [tool.ruff]
-line-length = 120
+line-length = 160
 target-version = "py312"
 exclude = [
   ".bzr", ".direnv", ".eggs", ".git", ".hg", ".mypy_cache", ".nox", ".pants.d",
