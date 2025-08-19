@@ -7,6 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .models import CustomUser
 from .openapi_schema import (
+    edit_partial_request,
     edit_request,
     edit_response,
     login_request,
@@ -51,7 +52,9 @@ class CustomLoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
     @swagger_auto_schema(
-        operation_summary="User Login", request_body=login_request, responses={200: login_response}
+        operation_summary="User Login",
+        request_body=login_request,
+        responses={200: login_response},
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
@@ -108,7 +111,7 @@ class UserEditView(generics.UpdateAPIView):
 
     @swagger_auto_schema(
         operation_summary="Partially Edit Current User Info (PATCH)",
-        request_body=edit_request,
+        request_body=edit_partial_request,
         responses={200: edit_response},
     )
     def patch(self, request, *args, **kwargs):
