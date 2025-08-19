@@ -4,6 +4,7 @@ from django.utils.text import slugify
 from rest_framework import serializers
 from store.models import Category
 
+from .mixins import AddressMixin, IconMixin, LikedMixin, LocalizedNameDescriptionMixin, PhotoMixin
 from .models import Ad, AdPhoto, FavouriteProduct, MySearch
 
 
@@ -44,7 +45,9 @@ class SellerShortSerializer(serializers.ModelSerializer):
         fields = ["id", "full_name", "phone_number", "profile_photo"]
 
 
-class AdCreateSerializer(serializers.ModelSerializer):
+class AdCreateSerializer(
+    LikedMixin, PhotoMixin, LocalizedNameDescriptionMixin, AddressMixin, serializers.ModelSerializer
+):
     name = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
     photos = serializers.ListField(child=serializers.ImageField(), write_only=True)
@@ -102,26 +105,19 @@ class AdCreateSerializer(serializers.ModelSerializer):
         return ad
 
     def get_photo(self, obj):
-        first_photo = obj.photos.first()
-        return first_photo.image.url if first_photo else None
+        return self.get_photo(obj, main_only=True)
 
     def get_address(self, obj):
-        return obj.seller.address.name if obj.seller.address else None
+        return super().get_address(obj)
 
     def get_is_liked(self, obj):
-        request = self.context.get("request")
-        user = request.user if request else None
-        if user and user.is_authenticated:
-            return obj.likes.filter(id=user.id).exists()
-        return False
+        return super().get_is_liked(obj)
 
     def get_name(self, obj):
-        lang = self.context["request"].LANGUAGE_CODE
-        return getattr(obj, f"name_{lang}", obj.name_uz)
+        return self.get_localized_field(obj, "name")
 
     def get_description(self, obj):
-        lang = self.context["request"].LANGUAGE_CODE
-        return getattr(obj, f"description_{lang}", obj.description_uz)
+        return self.get_localized_field(obj, "description")
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -158,7 +154,9 @@ class AdPhotoSerializer(serializers.ModelSerializer):
         }
 
 
-class AdDetailSerializer(serializers.ModelSerializer):
+class AdDetailSerializer(
+    LikedMixin, PhotoMixin, LocalizedNameDescriptionMixin, AddressMixin, serializers.ModelSerializer
+):
     photos = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
     seller = SellerShortSerializer(read_only=True)
@@ -187,13 +185,10 @@ class AdDetailSerializer(serializers.ModelSerializer):
         return [photo.image.url for photo in obj.photos.all()]
 
     def get_address(self, obj):
-        return obj.seller.address.name if obj.seller.address else None
+        return super().get_address(obj)
 
     def get_is_liked(self, obj):
-        user = self.context["request"].user
-        if user.is_authenticated:
-            return obj.likes.filter(id=user.id).exists()
-        return False
+        return super().get_is_liked(obj)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -247,7 +242,9 @@ class FavouriteProductSerializer(serializers.ModelSerializer):
         return data
 
 
-class AdListSerializer(serializers.ModelSerializer):
+class AdListSerializer(
+    LikedMixin, PhotoMixin, LocalizedNameDescriptionMixin, AddressMixin, serializers.ModelSerializer
+):
     photo = serializers.SerializerMethodField()
     address = serializers.CharField(source="address.name", read_only=True)
     seller = SellerShortSerializer(read_only=True)
@@ -269,15 +266,10 @@ class AdListSerializer(serializers.ModelSerializer):
         ]
 
     def get_photo(self, obj):
-        first_photo = obj.photos.first()
-        return first_photo.image.url if first_photo else None
+        return self.get_photo(obj, main_only=True)
 
     def get_is_liked(self, obj):
-        request = self.context.get("request")
-        user = getattr(request, "user", None)
-        if user and user.is_authenticated:
-            return obj.likes.filter(id=user.id).exists()
-        return False
+        return super().get_is_liked(obj)
 
 
 class MyAdsListSerializer(serializers.ModelSerializer):
@@ -438,7 +430,7 @@ class SearchCategorySerializer(serializers.Serializer):
         return obj.icon.url if obj.icon else None
 
 
-class SearchProductSerializer(serializers.Serializer):
+class SearchProductSerializer(IconMixin, serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     type = serializers.SerializerMethodField()
@@ -447,25 +439,11 @@ class SearchProductSerializer(serializers.Serializer):
     def get_type(self, obj):
         return "product"
 
-    def get_icon(self, obj):
-        main_photo = obj.photos.filter(is_main=True).first()
-        if main_photo:
-            return main_photo.image.url
-        first_photo = obj.photos.first()
-        return first_photo.image.url if first_photo else None
 
-
-class SearchCompleteSerializer(serializers.Serializer):
+class SearchCompleteSerializer(IconMixin, serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     icon = serializers.SerializerMethodField()
-
-    def get_icon(self, obj):
-        main_photo = obj.photos.filter(is_main=True).first()
-        if main_photo:
-            return main_photo.image.url
-        first_photo = obj.photos.first()
-        return first_photo.image.url if first_photo else None
 
 
 class SearchCountSerializer(serializers.Serializer):
@@ -475,21 +453,14 @@ class SearchCountSerializer(serializers.Serializer):
     updated_at = serializers.DateTimeField()
 
 
-class PopularSearchSerializer(serializers.Serializer):
+class PopularSearchSerializer(IconMixin, serializers.Serializer):
     id = serializers.IntegerField(source="product.id")
     name = serializers.CharField(source="product.name")
     icon = serializers.SerializerMethodField()
     search_count = serializers.IntegerField()
 
-    def get_icon(self, obj):
-        main_photo = obj.product.photos.filter(is_main=True).first()
-        if main_photo:
-            return main_photo.image.url
-        first_photo = obj.product.photos.first()
-        return first_photo.image.url if first_photo else None
 
-
-class SubCategorySerializer(serializers.ModelSerializer):
+class SubCategorySerializer(IconMixin, serializers.ModelSerializer):
     product_count = serializers.SerializerMethodField()
     icon = serializers.SerializerMethodField()
 
@@ -499,6 +470,3 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
     def get_product_count(self, obj):
         return "{:,}".format(obj.ad_set.count())
-
-    def get_icon(self, obj):
-        return obj.icon.url if obj.icon else None
