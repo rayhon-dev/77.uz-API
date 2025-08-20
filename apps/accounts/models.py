@@ -15,6 +15,9 @@ class Address(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        app_label = "accounts"
+
 
 class CustomUser(AbstractBaseUser, PermissionsMixin, BaseModel):
     class Role(models.TextChoices):

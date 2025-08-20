@@ -442,7 +442,7 @@ class ProductDownloadView(generics.RetrieveAPIView):
     @swagger_auto_schema(
         operation_summary="Download Product Details",
         operation_description="Retrieve detailed information of a product using its slug.",
-        responses={200: ad_detail_response},  # openapi_schema.py dagi response
+        responses={200: ad_detail_response},
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
