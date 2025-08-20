@@ -37,17 +37,17 @@
 - **Backend:** Python, Django, Django REST Framework
 - **База данных:** PostgreSQL
 - **Аутентификация:** JWT
-- **Документация API:** https://app.getpostman.com/join-team?invite_code=4a487244acacc81591f9dd8f4c2b1c2f362b498abb5f229f143b6242ac392633&target_code=470882866596abba7161dfc31de1fb4c
+- **Документация API:** https://grey-capsule-484900.postman.co/workspace/77.uz-API~8fcc6776-ef11-4e99-8b70-d71e9b12ecba/request/42956007-dfb15f2e-a700-48cc-aa1c-75ccbacea88b?action=share&creator=42956007&ctx=documentation&active-environment=42956007-c5b36211-db2c-453b-bd5d-b996cb5cd678
 
 ---
 
 ## 🚀 Установка и запуск
 ```bash
 # Клонировать репозиторий
-git clone https://github.com/Kamila-2006/Final-project.git
+git clone https://github.com/rayhon-dev/77.uz-API.git
 
 # Перейти в директорию проекта
-cd Final-project
+cd 77.uz-API
 
 # Создать виртуальное окружение
 python -m venv venv
