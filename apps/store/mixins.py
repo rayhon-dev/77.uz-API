@@ -29,11 +29,6 @@ class PhotoMixin:
         return photo.image.url if photo else None
 
 
-class AddressMixin:
-    def get_address(self, obj):
-        return getattr(obj.seller.address, "name", None)
-
-
 class LocalizedNameDescriptionMixin:
     def get_localized_field(self, obj, field):
         lang = self.context["request"].LANGUAGE_CODE

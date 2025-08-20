@@ -8,23 +8,23 @@ urlpatterns = [
     path(
         "categories-with-childs/",
         views.CategoriesWithChildrenView.as_view(),
-        name="categories-with-childs",
+        name="categories-with-children",
     ),
     path("category/", views.CategoryListView.as_view(), name="category-list"),
     path(
         "favourite-product-create-by-id/",
         views.FavouriteProductCreateByIDView.as_view(),
-        name="favourite-create-by-id",
+        name="favourite-product-create-by-id",
     ),
     path(
         "favourite-product-by-id/<int:pk>/delete/",
         views.FavouriteProductDeleteByIDView.as_view(),
-        name="favourite-delete-by-id",
+        name="favourite-product-delete-by-id",
     ),
     path(
         "favourite-product-create/",
         views.FavouriteProductCreateView.as_view(),
-        name="favourite-create",
+        name="favourite-product-create",
     ),
     path(
         "favourite-product/<int:pk>/delete/",
@@ -32,8 +32,8 @@ urlpatterns = [
         name="favourite-delete",
     ),
     path("list/ads/", views.AdListView.as_view(), name="list-ads"),
-    path("my-ads/", views.MyAdsListAPIView.as_view(), name="my-ads-list"),
-    path("my-ads/<int:pk>/", views.MyAdDetailUpdateDeleteView.as_view(), name="my-ads-detail"),
+    path("my-ads/", views.MyAdsListAPIView.as_view(), name="my-ads"),
+    path("my-ads/<int:pk>/", views.MyAdDetailUpdateDeleteView.as_view(), name="my-ad"),
     path(
         "my-favourite-product-by-id/",
         views.MyFavouriteProductByIdView.as_view(),

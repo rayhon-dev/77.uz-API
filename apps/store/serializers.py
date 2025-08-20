@@ -4,7 +4,7 @@ from django.utils.text import slugify
 from rest_framework import serializers
 from store.models import Category
 
-from .mixins import AddressMixin, IconMixin, LikedMixin, LocalizedNameDescriptionMixin, PhotoMixin
+from .mixins import IconMixin, LikedMixin, LocalizedNameDescriptionMixin, PhotoMixin
 from .models import Ad, AdPhoto, FavouriteProduct, MySearch
 
 
@@ -46,7 +46,7 @@ class SellerShortSerializer(serializers.ModelSerializer):
 
 
 class AdCreateSerializer(
-    LikedMixin, PhotoMixin, LocalizedNameDescriptionMixin, AddressMixin, serializers.ModelSerializer
+    LikedMixin, PhotoMixin, LocalizedNameDescriptionMixin, serializers.ModelSerializer
 ):
     name = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
@@ -98,20 +98,26 @@ class AdCreateSerializer(
     def create(self, validated_data):
         request = self.context["request"]
         user = request.user
-        photos_data = validated_data.pop("photos")
-        address = user.address
-        ad = Ad.objects.create(seller=user, address=address, **validated_data)
-        AdPhoto.objects.bulk_create([AdPhoto(ad=ad, image=img) for img in photos_data])
+        photos_data = validated_data.pop("photos", [])
+        ad = Ad.objects.create(seller=user, **validated_data)
+
+        ad_photos = []
+        for idx, img in enumerate(photos_data):
+            ad_photos.append(AdPhoto(ad=ad, image=img, is_main=(idx == 0)))
+        AdPhoto.objects.bulk_create(ad_photos)
+
         return ad
 
     def get_photo(self, obj):
-        return self.get_photo(obj, main_only=True)
-
-    def get_address(self, obj):
-        return super().get_address(obj)
+        return super().get_photo(obj, main_only=True)
 
     def get_is_liked(self, obj):
         return super().get_is_liked(obj)
+
+    def get_address(self, obj):
+        if obj.seller and getattr(obj.seller, "address", None):
+            return getattr(obj.seller.address, "name", None)
+        return None
 
     def get_name(self, obj):
         return self.get_localized_field(obj, "name")
@@ -155,13 +161,14 @@ class AdPhotoSerializer(serializers.ModelSerializer):
 
 
 class AdDetailSerializer(
-    LikedMixin, PhotoMixin, LocalizedNameDescriptionMixin, AddressMixin, serializers.ModelSerializer
+    LikedMixin, PhotoMixin, LocalizedNameDescriptionMixin, serializers.ModelSerializer
 ):
     photos = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
     seller = SellerShortSerializer(read_only=True)
     category = CategoryShortSerializer(read_only=True)
     is_liked = serializers.SerializerMethodField()
+    price = serializers.DecimalField(max_digits=12, decimal_places=2)
 
     class Meta:
         model = Ad
@@ -184,11 +191,13 @@ class AdDetailSerializer(
     def get_photos(self, obj):
         return [photo.image.url for photo in obj.photos.all()]
 
-    def get_address(self, obj):
-        return super().get_address(obj)
-
     def get_is_liked(self, obj):
         return super().get_is_liked(obj)
+
+    def get_address(self, obj):
+        if obj.seller and getattr(obj.seller, "address", None):
+            return getattr(obj.seller.address, "name", None)
+        return None
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -243,10 +252,10 @@ class FavouriteProductSerializer(serializers.ModelSerializer):
 
 
 class AdListSerializer(
-    LikedMixin, PhotoMixin, LocalizedNameDescriptionMixin, AddressMixin, serializers.ModelSerializer
+    LikedMixin, PhotoMixin, LocalizedNameDescriptionMixin, serializers.ModelSerializer
 ):
     photo = serializers.SerializerMethodField()
-    address = serializers.CharField(source="address.name", read_only=True)
+    address = serializers.SerializerMethodField()
     seller = SellerShortSerializer(read_only=True)
     is_liked = serializers.SerializerMethodField()
 
@@ -266,10 +275,15 @@ class AdListSerializer(
         ]
 
     def get_photo(self, obj):
-        return self.get_photo(obj, main_only=True)
+        return super().get_photo(obj)
 
     def get_is_liked(self, obj):
         return super().get_is_liked(obj)
+
+    def get_address(self, obj):
+        if obj.seller and getattr(obj.seller, "address", None):
+            return getattr(obj.seller.address, "name", None)
+        return None
 
 
 class MyAdsListSerializer(serializers.ModelSerializer):
@@ -306,9 +320,7 @@ class MyAdsListSerializer(serializers.ModelSerializer):
 
 
 class MyAdsDetailSerializer(serializers.ModelSerializer):
-    new_photos = serializers.ListField(
-        child=serializers.URLField(), write_only=True, required=False
-    )
+    new_photos = serializers.ListField(child=serializers.ImageField(), required=False)
     photos = serializers.SerializerMethodField()
 
     class Meta:
@@ -362,7 +374,7 @@ class FavouriteProductListSerializer(serializers.Serializer):
     published_at = serializers.DateTimeField(source="product.published_at", read_only=True)
     updated_time = serializers.DateTimeField(source="product.updated_time", read_only=True)
 
-    address = serializers.CharField(source="product.address.name", read_only=True)
+    address = serializers.SerializerMethodField()
     seller = serializers.CharField(source="product.seller.get_full_name", read_only=True)
 
     photo = serializers.SerializerMethodField()
@@ -375,6 +387,11 @@ class FavouriteProductListSerializer(serializers.Serializer):
     def get_is_liked(self, obj):
         user = self.context["request"].user
         return obj.product.likes.filter(id=user.id).exists() if user.is_authenticated else False
+
+    def get_address(self, obj):
+        if obj.product and getattr(obj.product, "address", None):
+            return getattr(obj.product.address, "name", None)
+        return None
 
 
 class CategoryForSearchSerializer(serializers.ModelSerializer):

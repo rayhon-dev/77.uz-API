@@ -40,7 +40,6 @@ class Ad(models.Model):
     price = models.PositiveIntegerField()
     category = models.ForeignKey("store.Category", on_delete=models.CASCADE)
     seller = models.ForeignKey("accounts.CustomUser", on_delete=models.CASCADE)
-    address = models.ForeignKey("accounts.Address", on_delete=models.CASCADE)
     published_at = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
@@ -51,7 +50,13 @@ class Ad(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name_uz)
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            while Ad.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         super().save(*args, **kwargs)
 
     def __str__(self):

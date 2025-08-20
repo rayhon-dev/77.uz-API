@@ -20,7 +20,7 @@ from .utils.custom_response_decorator import custom_response
 
 @custom_response
 class PageListAPIView(generics.ListAPIView):
-    queryset = Page.objects.all()
+    queryset = Page.objects.all().order_by("id")
     serializer_class = PageListSerializer
     pagination_class = PageListPagination
 

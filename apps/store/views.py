@@ -144,9 +144,8 @@ class FavouriteProductCreateView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
-
-def perform_create(self, serializer):
-    serializer.save(user=self.request.user)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 @custom_response
@@ -319,7 +318,7 @@ class MyFavouriteProductView(generics.ListAPIView):
         if category_id:
             queryset = queryset.filter(product__category_id=category_id)
         return (
-            queryset.select_related("product", "product__seller", "product__address")
+            queryset.select_related("product", "product__seller")
             .prefetch_related("product__photos")
             .order_by("-id")
         )
@@ -350,7 +349,7 @@ class MyFavouriteProductByIdView(generics.ListAPIView):
         device_id = self.request.query_params.get("device_id")
         return (
             FavouriteProduct.objects.filter(device_id=device_id)
-            .select_related("product", "product__seller", "product__address")
+            .select_related("product", "product__seller")
             .prefetch_related("product__photos")
             .order_by("-id")
         )
@@ -548,7 +547,7 @@ class SearchCountIncreaseView(generics.RetrieveAPIView):
     queryset = Ad.objects.all()
 
     def get_object(self):
-        product_id = self.kwargs["product_id"]
+        product_id = self.kwargs["category_id"]
         product = get_object_or_404(Ad, id=product_id)
 
         search_count, created = SearchCount.objects.get_or_create(product=product)
